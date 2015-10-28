@@ -1,0 +1,51 @@
+<html>
+	<head>
+		<script type="text/javascript" src="JSParser.js"></script>
+		<script id="test">
+			var test = {
+				irgendwas : "test",
+				lla : "dasdasd",
+
+
+				test : function(){
+
+				}
+			}
+			
+		</script>
+		<script type="text/javascript">
+			var test = document.getElementById("test");
+			var start = performance.now()
+			var parser = new JSParser();
+			
+			var tree = parser.parse(test.innerHTML);
+			
+			//parser.parseRule(tree, "keyword = 'var' | val | operator = '=' | string || number || block || expression || object || boolean || function | lineend || terminator", "declaration")
+
+			parser.parseRule(tree, "keyword = 'function' ~ replace | + val => 'name' | expression => 'arguments' | block ", "function")
+
+			//parser.parseRule(tree, "expression => 'arguments' | operator = '=>' | block ", "function")
+
+		//arguments
+			//parser.parseRule(tree, "val => 'argument' (parent.arguments) | comma || $ ");
+		
+		//object
+			parser.parseRule(tree, "block => 'object' > | * [ val | operator = ':' | string || function | + comma] ", false, { ignor : "lineend"});
+
+		//object property
+			parser.parseRule(tree, "val (parent.object) |  operator = ':' | string ", "property")
+
+			parser.parseRule(tree, "val (parent.object) |  operator = ':' | function ", "method")
+		
+		//var declaration
+			//parser.parseRule(tree, "keyword = 'var' | * [ val |  operator = '=' | string | + comma | ] | terminator ", "declaration", { ignor : "lineend"});
+			
+			console.log(performance.now() - start)
+			console.log("TREE", tree)
+			//parser.parseRule(tree, "keyword = 'for' | expression | block", "for")
+
+		</script>
+	</head>
+	<body>
+	</body>
+</html>
