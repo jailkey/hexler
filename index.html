@@ -1,49 +1,110 @@
 <html>
 	<head>
-		<script type="text/javascript" src="JSParser.js"></script>
+		<script type="text/javascript" src="src/file.js"></script>
+		<script type="text/javascript" src="src/hexler.js"></script>
+		<script type="text/javascript" src="src/sourceMap.js"></script>
+		<script type="text/javascript" src="src/kleber.js"></script>
 		<script id="test">
+
 			var test = {
 				irgendwas : "test",
 				lla : "dasdasd",
 
-
+				//asdasd
 				test : function(){
 
 				}
+
+
 			}
 			
 		</script>
 		<script type="text/javascript">
 			var test = document.getElementById("test");
-			var start = performance.now()
-			var parser = new JSParser();
+			var fileName = "test/Mold.js";
+			loadFile(fileName, function(data){
+				//console.log("data", data.response)
+				var start = performance.now()
+				var hexler = new Hexler();
+				var kleber = new Kleber(fileName, data.response);
+				console.log("hexler", hexler)
+				hexler.setContent(data.response);
+				
+				//parser.parseRule(tree, "keyword = 'var' | val | operator = '=' | string || number || block || expression || object || boolean || function | lineend || terminator", "declaration")
+
+				//hexler.addRule("keyword = 'function' ~ replace | + val => 'name' | expression => 'arguments' | block ", { create : "function" })
+
+				//parser.parseRule(tree, "expression => 'arguments' | operator = '=>' | block ", "function")
+
+			//arguments
+				//parser.parseRule(tree, "val => 'argument' (parent.arguments) | comma || $ ");
 			
-			var tree = parser.parse(test.innerHTML);
+			//object
+				//hexler.addRule("block => 'object' > | * [ val | operator = ':' | string || function | + comma] ", { ignor : "lineend"});
+
+			//object property
+				//hexler.addRule("val (parent.object) |  operator = ':' | string ", { create : "property" });
+
+				//hexler.addRule("val (parent.object) |  operator = ':' | function ", { create : "method" });
 			
-			//parser.parseRule(tree, "keyword = 'var' | val | operator = '=' | string || number || block || expression || object || boolean || function | lineend || terminator", "declaration")
+			//var declaration
+				//parser.parseRule(tree, "keyword = 'var' | * [ val |  operator = '=' | string | + comma | ] | terminator ", "declaration", { ignor : "lineend"});
+				var tree = hexler.parse(fileName);
+				console.log(performance.now() - start)
+				console.log("TREE", tree)
+				//parser.parseRule(tree, "keyword = 'for' | expression | block", "for")
+				
+				kleber
+					.on({ type : 'keyword' }, function(node){
+						return { output : node.name + " "}
+					})
+					.on({ type : 'val' }, function(node){
+						return { output : node.name + " "}
+					})
+					.on({ type : 'operator' }, function(node){
+						if(node.isTextOperator){
+							return { output : node.name + " "}
+						}else{
+							return { output : node.name }
+						}
+						
+					})
+					.on({ type : 'string' }, function(node){
+						return { output : node.stringType + node.name + node.stringType}
+					})
+					.on({ type : 'comma' }, function(node){
+						return { output : ","}
+					})
+					.on({ type : 'terminator' }, function(node){
+						return { output : node.name, skipSourceMap : true }
+					})
+					.on({ type : 'lineend' }, function(node){
+						return { output : node.name, lines : 1, skip : true }
+					})
+					.on({ type : 'expression' }, function(node, create, options, loc){
+						loc.level++;
+						return { output : "(" + create(node.children, options, loc) + ")", skipSourceMap : true }
+					})
+					.on({ type : 'block' }, function(node, create, options, loc){
+						//console.log("PARSE BLOCK", node, loc.line)
+						loc.level++;
+						return { output : "{" + create(node.children, options, loc) + "}", skipSourceMap : true }
+					})
+					.on({ type : 'list' }, function(node, create, options, loc){
+						loc.level++;
+						return { output : "[" + create(node.children, options, loc) + "]", skipSourceMap : true }
+					})
 
-			parser.parseRule(tree, "keyword = 'function' ~ replace | + val => 'name' | expression => 'arguments' | block ", "function")
+				var result = kleber.create(tree.children);
+				
+				//console.log(JSON.stringify(kleber.sourceMap.create()))
+				result += "\n//@ sourceMappingURL=data:application/json;base64," + btoa(JSON.stringify(kleber.sourceMap.create())) +"";
 
-			//parser.parseRule(tree, "expression => 'arguments' | operator = '=>' | block ", "function")
-
-		//arguments
-			//parser.parseRule(tree, "val => 'argument' (parent.arguments) | comma || $ ");
-		
-		//object
-			parser.parseRule(tree, "block => 'object' > | * [ val | operator = ':' | string || function | + comma] ", false, { ignor : "lineend"});
-
-		//object property
-			parser.parseRule(tree, "val (parent.object) |  operator = ':' | string ", "property")
-
-			parser.parseRule(tree, "val (parent.object) |  operator = ':' | function ", "method")
-		
-		//var declaration
-			//parser.parseRule(tree, "keyword = 'var' | * [ val |  operator = '=' | string | + comma | ] | terminator ", "declaration", { ignor : "lineend"});
-			
-			console.log(performance.now() - start)
-			console.log("TREE", tree)
-			//parser.parseRule(tree, "keyword = 'for' | expression | block", "for")
-
+				console.log("sourcemap", result)
+				eval(result);
+				//var test = new Function(result);
+				//test();
+			});
 		</script>
 	</head>
 	<body>
