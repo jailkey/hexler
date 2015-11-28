@@ -1,0 +1,38 @@
+<html>
+	<head>
+		<title>Test Hexler</title>
+
+		<link rel="shortcut icon" type="image/png" href="spec/jasmine/jasmine_favicon.png">
+		<link rel="stylesheet" type="text/css" href="spec/jasmine/jasmine.css">
+		<script type="text/javascript" src="spec/jasmine/jasmine.js"></script>
+		<script type="text/javascript" src="spec/jasmine/jasmine-html.js"></script>
+
+		<script src="../hexler.js"></script>
+		<script type="text/javascript" src="spec/hexler_specs.js"></script>
+		<script type="text/javascript" src="file.js"></script>
+
+	</head>
+	<body>
+
+			<script type="text/javascript">
+			(function() {
+				var jasmineEnv = jasmine.getEnv();
+				jasmineEnv.updateInterval = 1000;
+				var trivialReporter = new jasmine.TrivialReporter();
+				jasmineEnv.addReporter(trivialReporter);
+
+				jasmineEnv.specFilter = function(spec) {
+					return trivialReporter.specFilter(spec);
+				};
+
+				
+				jasmineEnv.execute();
+				
+
+			})();
+		</script>
+	</body>
+</html>		
+
+
+
