@@ -1,13 +1,18 @@
+"use strict";
 (function(global){
 
-	var TokenFactory = function(type, name, options){
-
+	var TokenFactory = function(type, name, options, charPos){
+		options = options || {};
+		var loc = {
+			line : (options.loc && options.loc.line) ? options.loc.line : 0,
+			charPosition : (charPos > -1) ? charPos : (options.loc && options.loc.charPosition) ? options.loc.charPosition : 0
+		}
 		return {
 			children : [],
 			type : type,
 			name :  name,
 			parent : null,
-			loc : options.loc,
+			loc : loc,
 			change : function(config){
 				for(var prop in config){
 					this[prop] = config[prop];
@@ -31,6 +36,9 @@
 				for(var i = 0; i < this.children.length; i++){
 					this.children[i].index = i;
 				}
+			},
+			nextSibling : function(){
+				return this.parent.children[this.index+1] || null;
 			},
 			child : function(type){
 				var collected = [];
@@ -79,8 +87,12 @@
 		operators : [
 			"++", "--", "?", ":", "=>",
 			"=", "+=", "-=", "*=", "/=", "%=", "<<=", ">>=", ">>>=", "|=", "^=", "&=",
-			"==", "!=", "===", "!==", "<", "<=", ">", ">=", "<<", ">>", ">>>", "+", "-" , "*", "/", "%", "|", "^", "&", "in", "instanceof", "..",
-			"-", "+", "!", "~", "typeof", "void", "delete"
+			"==", "!=", "===", "!==", "<", "<=", ">", ">=", "<<", ">>", ">>>", "+", "-" , "*", "/", "%", "|", "^", "&", "..",
+			"-", "+", "!", "~", "&&", "||"
+		],
+
+		textOperators : [
+			"in", "instanceof", "typeof ", "void", "delete"
 		],
 
 		keywords : [
@@ -114,6 +126,11 @@
 
 		orderdOperators : [],
 
+		isWord: function(value){
+
+			return /\w/g.test(value)
+		},
+
 		isMultilineCommentStart : function(value){
 			return (this.multilineCommentStart === value) ? true  : false;
 		},
@@ -146,8 +163,12 @@
 			return !!~this.operators.indexOf(value);
 		},
 
-		isKeyword : function(value){
-			return !!~this.keywords.indexOf(value);
+		isTextOperator : function(value, previous, next){
+			return !!~this.textOperators.indexOf(value) && !this.isWord(next);
+		},
+
+		isKeyword : function(value, next){
+			return !!~this.keywords.indexOf(value) && !this.isWord(next);
 		},
 
 		isWhitespace : function(value){
@@ -162,6 +183,23 @@
 			return (this.comma === value) ? true : false;
 		},
 
+		getStartBracket : function(endBracket){
+			return this.startBrackets[this.endBrackets.indexOf(endBracket)];
+		},
+
+		getEndBracket : function(startBracket){
+			return this.endBrackets[this.startBrackets.indexOf(startBracket)];
+		},
+
+		validateNesting : function(brackets, current){
+			var lastBracket = brackets[brackets.length -1];
+			if(this.getStartBracket(current) === lastBracket){
+				brackets.substring(0, brackets.length -1)
+			}else{
+				return false;
+			}
+		},
+
 		getBlockType : function(value){
 			switch(value){
 				case "{":
@@ -173,24 +211,24 @@
 			}
 		},
 
-		parse : function(code){
+		parse : function(code, filename){
 			this.orderOperators();
-			console.log("order operator")
-			return this.parseString(code);
+			return this.parseString(code, filename);
 		},
 
 		//returns tokens
-		parseString : function(string){
+		parseString : function(string, filename){
 			var i = 0, len = string.length;
 			var startToken = TokenFactory(this.types.PROGRAMM, 'start', { loc : null });
 			var token = startToken;
 			var lastToken = token;
 			var tokenValue = "";
 			var lineNumber = 1;
-			var charPosition = 1;
+			var charPosition = 0;
 			var that = this;
 			var mode = "";
 			var currentStringType = "";
+			var lastBrackets = "";
 
 			for(; i < len; i++){
 				var current = string[i];
@@ -200,7 +238,7 @@
 					return string.substring(i, i + len);
 				}
 
-				options = {
+				var options = {
 					loc : {
 						line : lineNumber,
 						charPosition : charPosition
@@ -216,8 +254,10 @@
 	
 				var createVal = function(){
 					if(previousValue !== ""){
+						var oldCharPos = options.loc.charPosition;
 						options.loc.charPosition = options.loc.charPosition - previousValue.length;
 						lastToken = TokenFactory(that.types.VALUE, previousValue, options);
+						options.loc.charPosition = oldCharPos;
 						token.addChild(lastToken);
 					}
 				}
@@ -239,19 +279,28 @@
 				var operator = false;
 				if(mode === "collectString"){
 					if(this.isString(current) && current === currentStringType){
-						lastToken = TokenFactory(this.types.STRING, tokenValue.substring(1, tokenValue.length -1), options);
+						var pos = options.loc.charPosition - tokenValue.length;
+						lastToken = TokenFactory(this.types.STRING, tokenValue.substring(1, tokenValue.length -1), options, pos);
 						lastToken.stringType = current;
 						token.addChild(lastToken);
 						tokenValue = "";
 						mode = "default";
 					}
+					if(this.isLineEnding(current)){
+						lineNumber++;
+					}
 
 				}else if(mode === "collectComment"){
 					if(this.isMultilineCommentEnd(next(this.multilineCommentEnd.length))){
 						lastToken = TokenFactory(this.types.COMMENT, tokenValue, options);
+						i = i + this.multilineCommentEnd.length - 1;
 						token.addChild(lastToken);
 						tokenValue = "";
 						mode = "default";
+					}
+
+					if(this.isLineEnding(current)){
+						lineNumber++;
 					}
 
 				}else if(mode === "collectSingleComment"){
@@ -271,9 +320,11 @@
 				}else if(this.isString(current)){
 					mode = "collectString";
 					currentStringType = current;
+					
 
-				}else if(this.isKeyword(tokenValue)){
-					lastToken = TokenFactory(this.types.KEYWORD, tokenValue, options);
+				}else if(this.isKeyword(tokenValue, next(1))){
+					var pos = options.loc.charPosition - tokenValue.length;
+					lastToken = TokenFactory(this.types.KEYWORD, tokenValue, options, pos);
 					token.addChild(lastToken);
 					tokenValue = "";
 
@@ -285,6 +336,13 @@
 					tokenValue = "";
 					i += (operator.len - 1)
 
+				}else if(this.isTextOperator(tokenValue, string.substring(i - tokenValue.length - 1, i - tokenValue.length), next(1))){
+					var pos = options.loc.charPosition - tokenValue.length;
+					lastToken = TokenFactory(this.types.OPERATOR, tokenValue, options, pos);
+					lastToken.isTextOperator = true;
+					token.addChild(lastToken);
+					tokenValue = "";
+
 		//handle single values
 				}else if(this.isLineEnding(current)){
 					createVal();
@@ -292,7 +350,7 @@
 					token.addChild(lastToken);
 					tokenValue = "";
 					lineNumber++;
-					charPosition = 1;
+					charPosition = 0;
 
 				}else if(this.isTerminator(current)){
 					createVal();
@@ -314,6 +372,7 @@
 
 				}else if(this.isStartBracket(current)){
 					createVal();
+					lastBrackets += current;
 					lastToken = TokenFactory(this.getBlockType(current), current, options);
 					token.addChild(lastToken);
 					token = lastToken;
@@ -321,8 +380,27 @@
 					tokenValue = "";
 
 				}else if(this.isEndBracket(current)){
+					var expectedBracket = this.getEndBracket(lastBrackets.substring(lastBrackets.length - 1, lastBrackets.length));
+					if(current !== expectedBracket){
+						var myError = new SyntaxError(
+							"Missing " + expectedBracket + " after " + this.getBlockType(this.getStartBracket(current)),
+							filename,
+							18
+						);
+						var stacks = myError.stack.split('\n');
+						stacks.splice(1, 0, "\tat anonymouse (http://localhost/hexler/hexler/Mold.js:18:5)");
+						myError.stack =  stacks.join("\n");
+						
+						myError.line = 18;
+						throw myError;
+					}
+					lastBrackets = lastBrackets.substring(0, lastBrackets.length -1);
 					createVal();
 					token = token.parent;
+					if(!token){
+						console.log(filename, options.loc.line)
+						throw new SyntaxError("Token not found in row " + options.loc.charPosition + "!", filename, options.loc.line);
+					}
 					tokenValue = "";
 
 				}else{
@@ -333,24 +411,29 @@
 			}
 			if(tokenValue !== ""){
 				options.loc.charPosition = options.loc.charPosition - tokenValue.length;
+				if(!token){
+					throw new SyntaxError("Token not found in row " + options.loc.charPosition + "!", filename, options.loc.line);
+				}
 				token.addChild(TokenFactory(this.types.VALUE, tokenValue, options));
 			}
 			
 			return startToken;
-		},
+		}
 
-		
+	}
 
-		parseRule : function(tree, rule, name, options){
+	
+	var RuleParser = function(){};
+
+	RuleParser.prototype = {
+
+		parseRule : function(tree, rule, options){
 			var expression = Expression(rule);
-			console.log("EXPRESSION", expression);
 			var result = this.parseExpression(tree.children, expression, options);
-			
 			for(var i = 0; i < result.length; i++){
-				//console.log(result[i])
-				this.insertResult(result[i], name);
+				this.insertResult(result[i], options.create || false);
 			}
-			console.log("TREE", tree)
+			return tree;
 		},
 
 		execCondition : function(condition, token, exp){
@@ -760,9 +843,6 @@
 		parser.operators = ["=", "&&", "||", "=>", "|", "~", ".", "!", "+", "*", ">"];
 
 		var tree = parser.parse(rule);
-
-	
-		
 		var index = 0;
 		var operate = "";
 		var nextOperator = false;
@@ -782,7 +862,6 @@
 				
 
 				var reset = function(){
-					console.log("reset")
 					optional = false;
 				 	multible = false;
 				 	levelDown = false;
@@ -875,7 +954,6 @@
 								break;
 
 							case "+":
-								console.log("optionale found")
 								optional = true;
 								break;
 
@@ -909,10 +987,57 @@
 		return createExpression(tree.children);
 	}
 
-	global.JSParser = Parser;
+	/**
+	 * @class Hexler 
+	 * @description hexler api interface
+	 * @param {object} config
+	 */
+	var Hexler = function(config){
+		this.config = config;
+		this.content = null;
+		this.tree = null;
+		this.rules = [];
+		this.parser = new Parser();
+		this.ruleParser = new RuleParser();
+	}
 
-	global.Expression = Expression;
+	Hexler.prototype = {
 
-	global.Walker = Walker;
+		/**
+		 * @method content 
+		 * @description adds parsing content to Hexler
+		 * @param  {string} content a code string
+		 */
+		setContent : function(content){
+			this.content = content;
+		},
 
-}(window))
+		/**
+		 * @method parse 
+		 * @description parse the added content and executes all rules on it
+		 * @return {object} returns the parsed tree
+		 */
+		parse : function(fileName){
+			this.tree = this.parser.parse(this.content, fileName);
+			for(var i = 0; i < this.rules.length; i++){
+				this.tree = this.ruleParser.parseRule(this.tree, this.rules[i].rule, this.rules[i].options);
+			}
+			return this.tree;
+		},
+
+		/**
+		 * @addRule 
+		 * @description adds a tree rule
+		 * @param {[type]} rule [description]
+		 */
+		addRule : function(rule, options){
+			this.rules.push({
+				rule : rule,
+				options : options || {}
+			})
+		}
+	}
+	console.log("EXPORTS")
+	global.Hexler = Hexler;
+
+}((typeof window !== 'undefined') ? window  : module.exports ))
