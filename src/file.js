@@ -1,4 +1,6 @@
-function loadFile(url, callback) {
+var fs = {
+
+    readFile : function(url, callback) {
         var xhr;
          
         if(typeof XMLHttpRequest !== 'undefined') xhr = new XMLHttpRequest();
@@ -37,4 +39,5 @@ function loadFile(url, callback) {
          
         xhr.open('GET', url, true);
         xhr.send('');
+    }
 }

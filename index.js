@@ -1,2 +1,2 @@
-var hexler = require('src/hexler').Hexler;
+var hexler = require('src/hexler');
 modul.exports = hexler;

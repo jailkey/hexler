@@ -1,6 +1,14 @@
 "use strict";
-(function(global){
+(function(){
 
+	/**
+	 * @function TokenFactory 
+	 * @description factory function creates tokens
+	 * @param {string} type - type of the token 
+	 * @param {string} name - name of the token
+	 * @param {object} options - options (currently the only supported option is the loc object)
+	 * @param {number} charPos - the current row position
+	 */
 	var TokenFactory = function(type, name, options, charPos){
 		options = options || {};
 		var loc = {
@@ -53,6 +61,10 @@
 		}
 	}
 
+	/**
+	 * @class  Parser 
+	 * @description parse a string my the given parsing options
+	 */
 	var Parser = function(){
 
 	}
@@ -382,25 +394,20 @@
 				}else if(this.isEndBracket(current)){
 					var expectedBracket = this.getEndBracket(lastBrackets.substring(lastBrackets.length - 1, lastBrackets.length));
 					if(current !== expectedBracket){
+
 						var myError = new SyntaxError(
-							"Missing " + expectedBracket + " after " + this.getBlockType(this.getStartBracket(current)),
+							"Missing " + expectedBracket + " after " + this.getBlockType(this.getStartBracket(current)) + " in " + filename + " line " + options.loc.line + "!",
 							filename,
-							18
+							options.loc.line
 						);
 						var stacks = myError.stack.split('\n');
-						stacks.splice(1, 0, "\tat anonymouse (http://localhost/hexler/hexler/Mold.js:18:5)");
 						myError.stack =  stacks.join("\n");
-						
-						myError.line = 18;
+						myError.line = options.loc.line;
 						throw myError;
 					}
 					lastBrackets = lastBrackets.substring(0, lastBrackets.length -1);
 					createVal();
 					token = token.parent;
-					if(!token){
-						console.log(filename, options.loc.line)
-						throw new SyntaxError("Token not found in row " + options.loc.charPosition + "!", filename, options.loc.line);
-					}
 					tokenValue = "";
 
 				}else{
@@ -428,12 +435,24 @@
 	RuleParser.prototype = {
 
 		parseRule : function(tree, rule, options){
+
 			var expression = Expression(rule);
+			options = this.getModifier(rule, options);
 			var result = this.parseExpression(tree.children, expression, options);
 			for(var i = 0; i < result.length; i++){
 				this.insertResult(result[i], options.create || false);
 			}
 			return tree;
+		},
+
+		getModifier : function(rule, options){
+			if(/\/[a-z]*$/g.test(rule)){
+				var modifier = rule.substring(rule.lastIndexOf('/') + 1, rule.length);
+				if(~modifier.indexOf('ib')){
+					options.ignore = 'lineend';
+				}
+			}
+			return options;
 		},
 
 		execCondition : function(condition, token, exp){
@@ -651,7 +670,6 @@
 					
 					var multiresult = this.testEntry(exp, testTree, options);
 					
-					//console.log("LENGTH END", testTree.length, multiresult, exp)
 					if(multiresult.length){
 						output = output.concat(multiresult)
 					}
@@ -667,11 +685,8 @@
 			var outputTree = [];
 			var collected = [];
 			var output = [];
-
-
 			options = options || {};
-			
-			//while(current = tree.shift()){
+
 			var y = 0, len = tree.length, explen = expression.length;;
 			for(; y < len;){
 				outputTree.push(current);
@@ -780,6 +795,12 @@
 			var undefined;
 
 			var parent = result[0].token.parent;
+			if(!name){
+				if(result[0].expression.action === 'create' || result[0].expression.action === 'replace' ){
+					name = result[0].expression.actionName;
+				}
+			}
+
 			if(name){
 				var newToken = TokenFactory(name, name,  { loc : result[0].token.loc });
 				parent.replaceChild(result[0].token, newToken);
@@ -801,7 +822,7 @@
 				}
 
 				if(result[i].expression.action === "replace"){
-					throw new Error("action 'replace' can only used for the first part of an rule.");
+					throw new Error(i + " action 'replace' can only used for the first part of an rule.");
 				}
 				
 				if(newToken){
@@ -872,6 +893,9 @@
 					case "val":
 						if(operate === "action"){
 							entry.action = item.name;
+							operate = "getname";
+						}else if(operate === "getname"){
+							entry.actionName = item.name;
 							operate = false;
 						}else{
 							lastEntry = entry;
@@ -1037,7 +1061,12 @@
 			})
 		}
 	}
-	console.log("EXPORTS")
-	global.Hexler = Hexler;
+	if(typeof window !== 'undefined'){
+		
+		window.Hexler = Hexler;
+		console.log("WINDOW", window.Hexler);
+	}else{
+		module.exports = Hexler;
+	}
 
-}((typeof window !== 'undefined') ? window  : module.exports ))
+}())
