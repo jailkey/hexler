@@ -1,2 +1,148 @@
-# hexler
-a dynamic extendable parser with a simple pattern description language
+# Hexler
+A dynamic extendable parser with a simple pattern description language.
+
+## how does hexler work?
+Hexler creates a simple minimal tree from the given code. The tree can be modified by rules. This approach helps you to parse only things are needed in the app. For example: you wish to transpile arrow functions into standard functions, so you add a rule for it and the parser don't have to parse more then this required rules. Rules can be written in simple meta language (pdl). 
+
+
+## default tree
+If no rules are defined the returned tree has only the following node types:
+  
+  - programm - the root node with information about the file or script
+  - string - string nodes (default " and ')
+  - keyword - keywords nodes (default all javascript keywords)
+  - val - value nodes are all node which don't fit into a other nodes pattern
+  - operator - operater nodes (default are all javascript operators)
+  - terminator - nodes with the defined terminator (default is ;)
+  - lineend - line end nodes (default is \n)
+  - comment - comment nodes (default /* */ for multiline and // for singleline comments)
+  - comma - comma nodes
+  - block - block nodes are all nodes wich start with { and ands with }
+  - expression - expression nodes start with ( and ends with )
+  - list - list nodes starts with [ and ends with ]
+  
+
+## install
+```
+	npm install hexler
+```
+
+## usage
+
+#### crate an instance
+
+```
+	var hexler = new Hexler();
+```
+#### add code to the parser
+ 
+ ```
+ 	hexler.setContent('var myTest = "this is a test";');
+ ```
+ 
+#### parse
+ 
+ ```
+ 	var tree = hexler.parse();
+ ```
+ 
+Hexler parsed the given content an creates a tree from it, the tree looks like this:
+
+	* programm
+		* keyword (var)
+		* val (hans)
+		* operator (=)
+		* string (test)
+		* terminator (;)
+		
+
+#### creating rules
+to modify the tree we can crate rules:
+ 
+ ```
+ 	hexler.addRule(
+ 		"keyword = 'var' | val | operator = '=' | ? | lineend || terminator", 
+ 		{ create : 'declaration' }
+ 	);
+ ```
+the ```addRule``` method accepts two arguments, the first one is the pattern, the second one is an object with instructions for the matched nodes.
+ 
+The rule above transforms the tree to the following:
+	
+	* programm
+		* declaration
+			* keyword (var)
+			* val (hans)
+			* operator (=)
+			* string (test)
+			* terminator (;)
+		
+ 
+  
+## the pattern discription language
+Rules for Hexler are defined in a pattern discription language. With this meta language you can easily discribe patterns in the tree. The language contains the following parts:
+
+#### seperator |
+The seperator splits the pattern into rules for each node. The example above matches a sequenz of five nodes. The pattern for each node is described in the rules beetween the vertical bars.
+
+#### node type
+Every ndoe rule needs a type definition, this is done by writing the type name.
+``` keyword | val ``` for example discribes a sequenz of to nodes. The first from type *keyword* the seconds type is *val* .
+
+##### logical node type operations
+If the pattern has to match more then one node type, logical operators *or (||)* and *and (&&)* can be used. For example ``` lineend || terminator ``` describes a pattern for nodes with the type *lineend* or *terminator*.
+
+##### node type wildcard
+If the pattern should match all types, the question mark *(?)* can be used
+
+##### optional nodes
+To mark a node as optional the plus *(+)*
+
+#### node value
+To match a special node value the euqal sign in used *(=)*. For example ``` val = 'var'``` matches a node with type 'val' and value 'var'.
+
+#### node conditions
+to define a node condition Hexler use parentheses. Inside the condition operators for 'parent' can be used. For example ```val (parent.object)``` matches all node with type *val* which has a parent node with *type object*.
+
+#### child nodes
+to tell a rule that it has to check the child tree > can be used.
+
+#### sub rules
+Sometimes it is necessary to match a a set of rules. For example you if you will match an object literal you can create a rule like this:
+
+```
+hexler.addRule(
+	"block => 'object' > | * [ val | operator = ':' | string || function | + comma] ",
+	{ ignor : "lineend"}
+);
+```
+in the second part of the rule (after the block), a subrule is defined. The subrule matches the block content, the * marks the complete subrule as multible means matchs 'one or more' times.
+
+#### actions
+It's possible to perform some actions inside a rule. To define a action ~ should be used. A rule like:
+
+```
+hexler.addRule(
+	"keyword = 'function' ~ replace | + val => 'name' | expression => 'arguments' | block ",
+	{ create : "function" }
+)
+```
+In this case the node with the replace action will be replaced by the created node with the type function.
+
+Currently possible actions are:
+	- replace
+	- remove
+
+##### retyping
+to retype a node the ```=>``` operator can be used. For example  if we cahnge ```val => name``` in the code, the node type of the *val* node becomes *name*.
+
+##### 
+
+
+
+
+
+	
+	
+## z
+
