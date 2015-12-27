@@ -108,30 +108,16 @@ to define a node condition Hexler use parentheses. Inside the condition operator
 to tell a rule that it has to check the child tree > can be used.
 
 #### sub rules
-Sometimes it is necessary to match a a set of rules. For example you if you will match an object literal you can create a rule like this:
+Sometimes it is necessary to match a set of rules. For example if you will match an object literal you can create a rule like this:
 
 ```
 hexler.addRule(
-	"block => 'object' > | * [ val | operator = ':' | string || function | + comma] ",
-	{ ignor : "lineend"}
+	"block => 'object' > | * [ val | operator = ':' | string || function | + comma] \ib",
 );
 ```
-in the second part of the rule (after the block), a subrule is defined. The subrule matches the block content, the * marks the complete subrule as multible means matchs 'one or more' times.
+in the second part of the rule (after the block), a subrule is defined. The subrule matches the block content, the * marks the complete subrule as multible, means matchs 'one or more' times.
 
-#### actions
-It's possible to perform some actions inside a rule. To define a action ~ should be used. A rule like:
 
-```
-hexler.addRule(
-	"keyword = 'function' ~ replace | + val => 'name' | expression => 'arguments' | block ",
-	{ create : "function" }
-)
-```
-In this case the node with the replace action will be replaced by the created node with the type function.
-
-Currently possible actions are:
-	- replace
-	- remove
 
 ##### retyping
 to retype a node the ```=>``` operator can be used. For example  if we cahnge ```val => name``` in the code, the node type of the *val* node becomes *name*.

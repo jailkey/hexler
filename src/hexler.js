@@ -440,7 +440,16 @@
 			options = this.getModifier(rule, options);
 			var result = this.parseExpression(tree.children, expression, options);
 			for(var i = 0; i < result.length; i++){
-				this.insertResult(result[i], options.create || false);
+				if(options.action){
+					this.execAction(result[i], options, tree);
+					for(var y = 0; y < result[i].length; y++){
+						if(result[i][y].expression.retype){
+							result[i][y].token.change({ type : result[i][y].expression.retype});
+						}
+					}
+				}else{
+					this.insertResult(result[i], options.create || false);
+				}
 			}
 			return tree;
 		},
@@ -789,6 +798,9 @@
 		},
 
 
+		execAction : function(result, options, tree){
+			options.action.call(this, result, tree);
+		},
 
 		insertResult : function(result, name){
 			var start = 0;
@@ -1050,7 +1062,18 @@
 		},
 
 		/**
-		 * @addRule 
+		 * @method createToken 
+		 * @description factory function to create new tokens
+		 * @param {string} type - type of the token 
+		 * @param {string} name - name of the token
+		 * @param {object} options - options (currently the only supported option is the loc object)
+	 	 * @param {number} charPos - the current row position
+	 	 * return {object} returns a new token object
+		 */
+		createToken : TokenFactory,
+
+		/**
+		 * @method addRule 
 		 * @description adds a tree rule
 		 * @param {[type]} rule [description]
 		 */
@@ -1059,6 +1082,56 @@
 				rule : rule,
 				options : options || {}
 			})
+		},
+
+		/**
+		 * @method createAction 
+		 * @description creates an action that will be executed when the rules matches
+		 * @param  {string} rule  the rule 
+		 * @param  {function} action the action that has to be executed when the rule matches, passed arguments are:
+		 *                           - matches an array with matched nodes
+		 *                           - tree the hole tree
+		 */
+		createAction : function(rule, action){
+
+			if(typeof action !== 'function'){
+				throw new Error('Argument "action" must be a function!')
+			}
+
+			this.rules.push({
+				rule : rule,
+				options : {
+					action : action
+				}
+			})
+		},
+
+		/**
+		 * @method createParent 
+		 * @description creates a new node if the rule matches, the machted nodes become childnodes of the new one
+		 * @param  {string} rule  - the rule
+		 * @param  {string} name - the name of the new rule
+		 * @param  {object} [properties] - an optional object with properties for the new node
+		 */
+		createParent : function(rule, name, properties){
+			this.createAction(rule, function(matches, tree){
+				var parent = matches[0].token.parent;
+				var newToken = TokenFactory(name, name,  { loc : matches[0].token.loc });
+				if(typeof properties === 'object'){
+					for(var prop in properties){
+						newToken[prop] = properties[prop];
+					}
+				}
+				parent.replaceChild(matches[0].token, newToken);
+				newToken.addChild(matches[0].token);
+				for(var i = 1; i < matches.length; i++){
+					if(matches[i] === true || matches[i] === undefined){
+						continue;
+					}
+					parent.removeChild(matches[i].token);
+					newToken.addChild(matches[i].token);
+				}		
+			});
 		}
 	}
 	if(typeof window !== 'undefined'){

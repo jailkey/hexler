@@ -12,7 +12,44 @@ describe("Hexler", function () {
 		var test = process.hrtime.bind(process)
 	}
 
-	describe("testing a simple rule", function () {
+	describe("test creating an action", function () {
+
+		it("creates new hexler instance", function(){
+			hexler = new Hexler();
+		});
+
+		it("sets content", function(){
+			hexler.setContent("var hans = 'test';")
+		});
+
+		it("add action and parse content", function(){
+			var name = 'declaration';
+			hexler.createAction("keyword = 'var' => 'var' | val | operator = '=' | ? | lineend || terminator /ib", function(matches, tree){
+				//console.log(matches)
+				var parent = matches[0].token.parent;
+				var newToken = hexler.createToken(name, name,  { loc : matches[0].token.loc });
+				parent.replaceChild(matches[0].token, newToken);
+				newToken.addChild(matches[0].token);
+				for(var i = 1; i < matches.length; i++){
+					if(matches[i] === true || matches[i] === undefined){
+						continue;
+					}
+					parent.removeChild(matches[i].token);
+					newToken.addChild(matches[i].token);
+				}
+				expect(tree.children[0].type).toBe("declaration");
+				expect(tree.children[0].children.length).toBe(5);
+				
+			});
+			var parsedTree = hexler.parse();
+			expect(parsedTree.children[0].children[0].type).toBe('var');
+		});
+
+	})
+
+
+
+	describe("testing createParent method", function () {
 
 		it("creates new hexler instance", function(){
 			hexler = new Hexler();
@@ -23,7 +60,8 @@ describe("Hexler", function () {
 		});
 
 		it("adds a rule", function(){
-			hexler.addRule("keyword = 'var' ~ create declaration | val | operator = '=' | ? | lineend || terminator /ib");
+			//hexler.addRule("keyword = 'var' ~ create declaration | val | operator = '=' | ? | lineend || terminator /ib")
+			hexler.createParent("keyword = 'var' | val | operator = '=' | ? | lineend || terminator /ib", 'declaration');
 		})
 
 		it("parse rule and check tree", function(){
