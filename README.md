@@ -60,12 +60,12 @@ Hexler parsed the given content an creates a tree from it, the tree looks like t
 to modify the tree we can crate rules:
  
  ```
- 	hexler.addRule(
+ 	hexler.createParent(
  		"keyword = 'var' | val | operator = '=' | ? | lineend || terminator", 
- 		{ create : 'declaration' }
+ 		'declaration'
  	);
  ```
-the ```addRule``` method accepts two arguments, the first one is the pattern, the second one is an object with instructions for the matched nodes.
+the ```createParent``` method accepts two arguments, the first one is the rule pattern, the second one is the name for the new token.
  
 The rule above transforms the tree to the following:
 	
@@ -118,17 +118,37 @@ hexler.addRule(
 in the second part of the rule (after the block), a subrule is defined. The subrule matches the block content, the * marks the complete subrule as multible, means matchs 'one or more' times.
 
 
-
 ##### retyping
 to retype a node the ```=>``` operator can be used. For example  if we cahnge ```val => name``` in the code, the node type of the *val* node becomes *name*.
 
-##### 
 
-
-
+##### modifier
+currently only the modifier /ib (ignor breaks) is availabel, if the modifier is set lineendings will be ignored.
 
 
 	
 	
-## z
+## hexler methods
+
+#### .setContent( content )
+The set content method sets the content that should be parsed. The method expects a string with the content.
+
+#### .parse()
+The parse method parse the content by the given rules and returns a convertert tree. If no rules given a standard tree will returned.
+
+#### .createToken( type, value, [options] )
+A factory method to create new tokens. The method expects the arguments type for the node type and value for the node value. The optional option object can contain a loc object with the properties 'line' and 'charPosition'.
+
+#### .createAction( rule, action )
+The methods creates a custom action for a specific rule. Expected arguments are the 'rule' string and a action callback. The callback will be called with a 'matched' parameter that contains the matched nodes and and a tree parameter taht contains th hole tree.
+
+#### .createParent( rule, type, [properties])
+Creates a new parent node if the rule matches, the matched nodes becomes children of it. Expected arguments are 'rule' the rule to match, 'type' the token type and an optional properties object that will be added to the new token.
+
+#### .removeIndex( rule, index )
+Removes a specific token from the tree. The method expects the arguments 'rule' for the matching rule and 'index'  for the matching index of the rule.
+
+#### .removeAll( rule )
+Removes all matched tokens. Expects only a rule as argument.
+
 

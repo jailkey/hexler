@@ -66,13 +66,82 @@ describe("Hexler", function () {
 
 		it("parse rule and check tree", function(){
 			var tree = hexler.parse();
-			console.log('hexler', tree)
 			expect(tree.type).toBe("programm");
 			expect(tree.children[0].type).toBe("declaration");
 			expect(tree.children[0].children.length).toBe(5);
 		})
 
 	});
+
+	describe("testing removeIndex method", function () {
+
+		it("creates new hexler instance", function(){
+			hexler = new Hexler();
+		});
+
+		it("sets content", function(){
+			hexler.setContent("var hans = 'test';")
+		});
+
+		it("execute removeIndex", function(){
+			hexler.removeIndex("keyword = 'var' | val | operator = '=' | ? | lineend || terminator /ib", 1);
+		})
+
+		it("parse rule and check tree", function(){
+			var tree = hexler.parse();
+			console.log('hexler', tree)
+			expect(tree.children.length).toBe(4);
+			expect(tree.children[1].type).toBe('operator');
+		})
+
+	});
+
+	describe("testing removeAll method", function () {
+
+		it("creates new hexler instance", function(){
+			hexler = new Hexler();
+		});
+
+		it("sets content", function(){
+			hexler.setContent("var hans = 'test';")
+		});
+
+		it("execute removeAll", function(){
+			hexler.removeAll("keyword = 'var' | val | operator = '=' | ? | lineend || terminator /ib");
+		})
+
+		it("parse rule and check tree", function(){
+			var tree = hexler.parse();
+			console.log('hexler', tree)
+			expect(tree.children.length).toBe(0);
+		})
+
+	});
+
+	describe("testing firstToParent method", function () {
+
+		it("creates new hexler instance", function(){
+			hexler = new Hexler();
+		});
+
+		it("sets content", function(){
+			hexler.setContent("var hans = 'test';")
+		});
+
+		it("execute firstToParent", function(){
+			hexler.firstToParent("keyword = 'var' | val | operator = '=' | ? | lineend || terminator /ib");
+		})
+
+		it("parse rule and check tree", function(){
+			var tree = hexler.parse();
+			console.log('hexler', tree)
+			expect(tree.children[0].type).toBe("keyword");
+			expect(tree.children.length).toBe(1);
+			expect(tree.children[0].children.length).toBe(4);
+		})
+
+	});
+
 
 
 

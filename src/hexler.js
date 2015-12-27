@@ -45,6 +45,9 @@
 					this.children[i].index = i;
 				}
 			},
+			remove : function(){
+				this.parent.removeChild(this);
+			},
 			nextSibling : function(){
 				return this.parent.children[this.index+1] || null;
 			},
@@ -1089,7 +1092,7 @@
 		 * @description creates an action that will be executed when the rules matches
 		 * @param  {string} rule  the rule 
 		 * @param  {function} action the action that has to be executed when the rule matches, passed arguments are:
-		 *                           - matches an array with matched nodes
+		 *                           - matches an array with matched tokens
 		 *                           - tree the hole tree
 		 */
 		createAction : function(rule, action){
@@ -1104,14 +1107,16 @@
 					action : action
 				}
 			})
+
+			return this;
 		},
 
 		/**
 		 * @method createParent 
-		 * @description creates a new node if the rule matches, the machted nodes become childnodes of the new one
+		 * @description creates a new parent token if the rule matches, the machted nodes become child tokens of the new one
 		 * @param  {string} rule  - the rule
 		 * @param  {string} name - the name of the new rule
-		 * @param  {object} [properties] - an optional object with properties for the new node
+		 * @param  {object} [properties] - an optional object with properties for the new token
 		 */
 		createParent : function(rule, name, properties){
 			this.createAction(rule, function(matches, tree){
@@ -1119,7 +1124,12 @@
 				var newToken = TokenFactory(name, name,  { loc : matches[0].token.loc });
 				if(typeof properties === 'object'){
 					for(var prop in properties){
-						newToken[prop] = properties[prop];
+						if(typeof properties[prop] === 'function'){
+							newToken[prop] = properties[prop].bind(newToken);
+						}else{
+							newToken[prop] = properties[prop];
+						}
+						
 					}
 				}
 				parent.replaceChild(matches[0].token, newToken);
@@ -1132,8 +1142,63 @@
 					newToken.addChild(matches[i].token);
 				}		
 			});
+			return this;
+		},
+
+		/**
+		 * @method firstToParent 
+		 * @description converts the first match to a parent of the matched sequenz
+		 * @param  {string} rule - the rule to match
+		 */
+		firstToParent : function(rule){
+			this.createAction(rule, function(matches, tree){
+				var parent = matches[0].token.parent;
+				for(var i = 1; i < matches.length; i++){
+					if(matches[i] === true || matches[i] === undefined){
+						continue;
+					}
+					parent.removeChild(matches[i].token);
+					matches[0].token.addChild(matches[i].token);
+				}	
+			});
+
+			return this;
+		},
+
+		/**
+		 * @method removeIndex 
+		 * @description removes one of the matched tokens by index
+		 * @param  {string} rule - the rule
+		 * @param  {number} index
+		 */
+		removeIndex : function(rule, index){
+			this.createAction(rule, function(matches, tree){
+				if(matches[index]){
+					console.log(matches[index])
+					matches[index].token.remove();
+				}
+			});
+			return this;
+		},
+
+		/**
+		 * @method removeAll
+		 * @description removes all matched tokens
+		 * @param  {string} rule - the rule
+		 */
+		removeAll : function(rule){
+			this.createAction(rule, function(matches, tree){
+				for(var i = 0; i < matches.length; i++){
+					if(matches[i]){
+						matches[i].token.remove();
+					}
+				}
+			});
+			return this;
 		}
+
 	}
+
 	if(typeof window !== 'undefined'){
 		
 		window.Hexler = Hexler;
