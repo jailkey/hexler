@@ -27,6 +27,18 @@ If no rules are defined the returned tree has only the following node types:
 	npm install hexler
 ```
 
+## include
+
+#### node
+```javascript
+	var Hexler = require('hexler);
+```
+
+#### browser
+```html
+	<script type="text/javascript" src="node_modules/hexler/src/hexler.js"></script>
+```
+
 ## usage
 
 #### crate an instance
@@ -36,13 +48,13 @@ If no rules are defined the returned tree has only the following node types:
 ```
 #### add code to the parser
  
- ```
+ ```javascript
  	hexler.setContent('var myTest = "this is a test";');
  ```
  
 #### parse
  
- ```
+ ```javascript
  	var tree = hexler.parse();
  ```
  
@@ -59,11 +71,11 @@ Hexler parsed the given content an creates a tree from it, the tree looks like t
 #### creating rules
 to modify the tree we can crate rules:
  
- ```
-hexler.createParent(
-   "keyword = 'var' | val | operator = '=' | ? | lineend || terminator", 
-   'declaration'
- );
+ ```javascript
+  hexler.createParent(
+      "keyword = 'var' | val | operator = '=' | ? | lineend || terminator", 
+      'declaration'
+  );
  ```
 the ```createParent``` method accepts two arguments, the first one is the rule pattern, the second one is the name for the new token.
  
@@ -110,7 +122,7 @@ to tell a rule that it has to check the child tree > can be used.
 #### sub rules
 Sometimes it is necessary to match a set of rules. For example if you will match an object literal you can create a rule like this:
 
-```
+```javascript
 hexler.addRule(
 	"block => 'object' > | * [ val | operator = ':' | string || function | + comma] \ib",
 );
