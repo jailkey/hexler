@@ -1,6 +1,6 @@
 {
   "name": "hexler",
-  "version": "0.0.2",
+  "version": "0.0.3",
   "description": "dynamic extendable javascript parser",
   "main": "index.js",
   "directories": {
