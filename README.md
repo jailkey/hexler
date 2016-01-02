@@ -31,7 +31,7 @@ If no rules are defined the returned tree has only the following node types:
 
 #### node
 ```javascript
-	var Hexler = require('hexler);
+	var Hexler = require('hexler');
 ```
 
 #### browser
