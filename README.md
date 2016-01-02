@@ -31,7 +31,7 @@ If no rules are defined the returned tree has only the following node types:
 
 #### crate an instance
 
-```
+```javascript
 	var hexler = new Hexler();
 ```
 #### add code to the parser
@@ -60,10 +60,10 @@ Hexler parsed the given content an creates a tree from it, the tree looks like t
 to modify the tree we can crate rules:
  
  ```
- 	hexler.createParent(
- 		"keyword = 'var' | val | operator = '=' | ? | lineend || terminator", 
- 		'declaration'
- 	);
+hexler.createParent(
+   "keyword = 'var' | val | operator = '=' | ? | lineend || terminator", 
+   'declaration'
+ );
  ```
 the ```createParent``` method accepts two arguments, the first one is the rule pattern, the second one is the name for the new token.
  
