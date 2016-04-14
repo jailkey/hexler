@@ -1,5 +1,15 @@
+//!info transpiled
 "use strict";
-(function(){
+if(!Seed){
+	var Seed = function(type, code){
+		code(module);
+	}
+}
+Seed({
+		type : "module",
+		test : "Mold.Test.Core.Compile.Hexler"
+	},
+	function(module){
 
 	/**
 	 * @function TokenFactory 
@@ -1199,12 +1209,6 @@
 
 	}
 
-	if(typeof window !== 'undefined'){
-		
-		window.Hexler = Hexler;
-		console.log("WINDOW", window.Hexler);
-	}else{
-		module.exports = Hexler;
-	}
+	module.exports = Hexler;
 
-}())
+})

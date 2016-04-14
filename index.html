@@ -98,7 +98,7 @@
 				var result = kleber.create(tree.children);
 				
 				//console.log(JSON.stringify(kleber.sourceMap.create()))
-				result += "\n//@ sourceMappingURL=data:application/json;base64," + btoa(JSON.stringify(kleber.sourceMap.create())) +"";
+				result += "\n//@sourceMappingURL=data:application/json;base64," + btoa(JSON.stringify(kleber.sourceMap.create())) +"";
 
 				console.log("sourcemap", result)
 				eval(result);

@@ -1,1 +1,17 @@
 node_modules/**/*
+Mold.js
+/Mold/Core/Validation.js
+/Mold/Core/Version.js
+/Mold/Core/NPM.js
+/Mold/Core/VM.js
+/Mold/Core/Sequence.js
+/Mold/Core/__.js
+/Mold/Core/Test/Tester.js
+/Mold/Core/Test/CLIReporter.js
+/Mold/CMD/Test.js
+/Mold/Core/EventStore.js
+/Mold/Core/Event.js
+/Mold/Core/CLIForm.js
+/Mold/Core/CLILoadingBar.js
+/Mold/Core/Logger.js
+/Mold/Core/CLI.js

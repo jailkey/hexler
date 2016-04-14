@@ -39,14 +39,10 @@
 				var node = tree[i];
 				for(y = 0; y < visitorLen; y++){
 
-					
 					var visitor = this.visitors[y];
-
 					if(this.patternApplies(node, visitor.pattern)){
 					
 						var result = visitor.callback(node, this.create.bind(this), options, loc);
-						
-						
 						if(result.lines){
 							for(var x = 0; x < result.lines; x++){
 								output += " \n"
