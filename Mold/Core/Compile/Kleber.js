@@ -8,8 +8,8 @@ Seed({
 		var Kleber = function(filename, content){
 
 			this.visitors = [];
-			this.sourceMap = new global.SourceMap(filename, content);
-			
+			this.sourceMap = new Mold.Core.SourceMap(filename, content);
+			this.defaults();
 		}
 
 		Kleber.prototype = {
@@ -45,7 +45,7 @@ Seed({
 
 						var visitor = this.visitors[y];
 						if(this.patternApplies(node, visitor.pattern)){
-						
+							
 							var result = visitor.callback(node, this.create.bind(this), options, loc);
 							if(result.lines){
 								for(var x = 0; x < result.lines; x++){
@@ -83,6 +83,49 @@ Seed({
 				})
 
 				return this;
+			},
+
+			defaults : function(){
+				this
+					.on({ type : 'keyword' }, function(node){
+						return { output : node.name + " "}
+					})
+					.on({ type : 'val' }, function(node){
+						return { output : node.name + " "}
+					})
+					.on({ type : 'operator' }, function(node){
+						if(node.isTextOperator){
+							return { output : " " + node.name + " "}
+						}else{
+							return { output : " " + node.name + " "}
+						}
+						
+					})
+					.on({ type : 'string' }, function(node){
+						return { output : node.stringType + node.name + node.stringType}
+					})
+					.on({ type : 'comma' }, function(node){
+						return { output : ","}
+					})
+					.on({ type : 'terminator' }, function(node){
+						return { output : node.name, skipSourceMap : true }
+					})
+					.on({ type : 'lineend' }, function(node){
+						return { output : node.name, lines : 1, skip : true }
+					})
+					.on({ type : 'expression' }, function(node, create, options, loc){
+						loc.level++;
+						return { output : "(" + create(node.children, options, loc) + ")", skipSourceMap : true }
+					})
+					.on({ type : 'block' }, function(node, create, options, loc){
+						//console.log("PARSE BLOCK", node, loc.line)
+						loc.level++;
+						return { output : "{" + create(node.children, options, loc) + "}", skipSourceMap : true }
+					})
+					.on({ type : 'list' }, function(node, create, options, loc){
+						loc.level++;
+						return { output : "[" + create(node.children, options, loc) + "]", skipSourceMap : true }
+					})
 			}
 		}
 

@@ -43,6 +43,7 @@ Seed({
 			},
 
 			execCondition : function(condition, token, exp){
+
 				var output = false;
 				var currentToken = token;
 				var negate = false;
@@ -139,6 +140,9 @@ Seed({
 			},
 
 			execExpression : function(expression, token){
+				if(expression.type === "$"){
+					console.log("EXEC EXP", expression.type, token)
+				}
 				if(expression.type === "$" && !token){
 					return {
 						token : false,
@@ -229,7 +233,7 @@ Seed({
 						result = (this.execCondition(exp.condition, currentToken, exp)) ? result : false;
 
 					}
-					
+				
 					if(result){
 						if(collectedIgnors.length){
 							output = output.concat(collectedIgnors);
@@ -254,15 +258,15 @@ Seed({
 							testTree = Object.create(tree);
 							testTree.shift();
 						}
-						
-						var multiresult = this.testEntry(exp, testTree, options);
-						
-						if(multiresult.length){
-							output = output.concat(multiresult)
+						if(testTree.length){
+							var multiresult = this.testEntry(exp, testTree, options);
+							
+							if(multiresult.length){
+								output = output.concat(multiresult)
+							}
 						}
 					}
 				}
-
 				return output;
 
 			},
@@ -274,7 +278,8 @@ Seed({
 				var output = [];
 				options = options || {};
 
-				var y = 0, len = tree.length, explen = expression.length;;
+				var y = 0, len = tree.length, explen = expression.length;
+				
 				for(; y < len;){
 					outputTree.push(current);
 					var test = true;
@@ -282,11 +287,13 @@ Seed({
 					var subLevelTree = false;
 					var z = 0;
 					collected = [];
-					
+
 					var i = 0;
+					var originIndex = y;
 					for(;i < explen; i++){
 						options.index = i;
 						if(checkSublevel && subLevelTree && subLevelTree.length){
+
 							var subResult = this.testEntry(expression[i], subLevelTree.slice(z, subLevelTree.length), options);
 							if(!subResult){
 								test = false;
@@ -304,7 +311,7 @@ Seed({
 								collected = collected.concat(subResult);
 							}
 						}else{
-						
+							
 							var result = this.testEntry(expression[i], tree.slice(y, tree.length), options);
 							if(!result.length){
 								test = false;
@@ -327,23 +334,28 @@ Seed({
 									subLevelTree = result[0].token.children;
 								}
 							}
-						}
-						
+						}	
 					}
+
 					if(test && collected.length >= expression.length){
 						output.push(collected);
 						collected = [];
 					}
 
 					//checkchilds
+					
+				}
+			
+				var y = 0;
+				var len = tree.length;
+				
+				for(; y < len; y++){
 					if(tree[y] && tree[y].children.length){
 						var childrenResult = this.parseExpression(tree[y].children, expression, options);
 						var output = output.concat(childrenResult);
 					}
-
 				}
 
-				//console.log("RESULT", output)
 				return output;
 			},
 

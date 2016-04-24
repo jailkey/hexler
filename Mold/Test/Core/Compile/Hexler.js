@@ -8,8 +8,6 @@ Seed({
 	},
 	function(Hexler){
 
-	
-
 		describe("Hexler", function () {
 			
 			var hexler = false;

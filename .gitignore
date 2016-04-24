@@ -15,3 +15,7 @@ Mold.js
 /Mold/Core/CLILoadingBar.js
 /Mold/Core/Logger.js
 /Mold/Core/CLI.js
+/Mold/Core/Test/ConsoleReporter.js
+/Mold/Test/Core/Tester.js
+/Mold/Test/Core/Event.js
+/Mold/Core/CLIHelper.js

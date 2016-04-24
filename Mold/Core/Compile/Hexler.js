@@ -1,10 +1,5 @@
 //!info transpiled
 "use strict";
-if(!Seed){
-	var Seed = function(type, code){
-		code(module);
-	}
-}
 Seed({
 		type : "module",
 		test : "Mold.Test.Core.Compile.Hexler",
@@ -114,6 +109,7 @@ Seed({
 			 */
 			createParent : function(rule, name, properties){
 				this.createAction(rule, function(matches, tree){
+
 					var parent = matches[0].token.parent;
 					var newToken = TokenFactory(name, name,  { loc : matches[0].token.loc });
 					if(typeof properties === 'object'){
@@ -126,14 +122,17 @@ Seed({
 							
 						}
 					}
+
 					parent.replaceChild(matches[0].token, newToken);
 					newToken.addChild(matches[0].token);
 					for(var i = 1; i < matches.length; i++){
 						if(matches[i] === true || matches[i] === undefined){
 							continue;
 						}
-						parent.removeChild(matches[i].token);
-						newToken.addChild(matches[i].token);
+						if(matches[i].token){
+							parent.removeChild(matches[i].token);
+							newToken.addChild(matches[i].token);
+						}
 					}		
 				});
 				return this;
@@ -141,7 +140,7 @@ Seed({
 
 			/**
 			 * @method firstToParent 
-			 * @description converts the first match to a parent of the matched sequenz
+			 * @description converts the first match to a parent of the matched sequence
 			 * @param  {string} rule - the rule to match
 			 */
 			firstToParent : function(rule){
@@ -151,8 +150,10 @@ Seed({
 						if(matches[i] === true || matches[i] === undefined){
 							continue;
 						}
-						parent.removeChild(matches[i].token);
-						matches[0].token.addChild(matches[i].token);
+						if(matches[i].token){
+							parent.removeChild(matches[i].token);
+							matches[0].token.addChild(matches[i].token);
+						}
 					}	
 				});
 
