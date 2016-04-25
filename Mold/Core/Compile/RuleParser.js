@@ -141,7 +141,7 @@ Seed({
 
 			execExpression : function(expression, token){
 				if(expression.type === "$"){
-					console.log("EXEC EXP", expression.type, token)
+				//	console.log("EXEC EXP", expression.type, token)
 				}
 				if(expression.type === "$" && !token){
 					return {
@@ -222,16 +222,22 @@ Seed({
 			//or single value
 				}else{
 					var result;
-					//console.log("EXEC", exp.type, currentToken)
 					if(exp.logical){
 						result = this.execLogicals(exp, currentToken);
 					}else{
 						result = this.execExpression(exp, currentToken);
+						if(exp.type === "?" && result){
+							//retest with next expression if it is true skip testing;
+							var nextResult = this.testEntry(options.nextExpression, [currentToken], options, level);
+							if(nextResult.length){
+								//skip
+								result = null;
+							}
+						}
 					}
 					
 					if(result && exp.condition){
 						result = (this.execCondition(exp.condition, currentToken, exp)) ? result : false;
-
 					}
 				
 					if(result){
@@ -306,13 +312,14 @@ Seed({
 									if(result[x] !== true){
 										z++;
 									}
-									
 								}
 								collected = collected.concat(subResult);
 							}
 						}else{
+							var slice = tree.slice(y, tree.length);
+							options.nextExpression = expression[i +1];
+							var result = this.testEntry(expression[i], slice, options);
 							
-							var result = this.testEntry(expression[i], tree.slice(y, tree.length), options);
 							if(!result.length){
 								test = false;
 								y++;
@@ -324,7 +331,6 @@ Seed({
 									if(result[x] !== true){
 										y++;
 									}
-									
 								}
 								
 								collected = collected.concat(result);

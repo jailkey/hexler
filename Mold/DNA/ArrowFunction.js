@@ -11,8 +11,8 @@ Seed({
 			transform : function(parser){
 
 				parser.createParent("val || expression => 'arguments' | operator = '=>' | block", "arrowFunction");
-				parser.createParent("val || expression  => 'arguments' | operator = '=>' | * string || val || operator | terminator || $", "arrowFunction");
-				console.log("create parent")
+				parser.createParent("val || expression  => 'arguments' | operator = '=>' | * ? | terminator || $", "arrowFunction");
+
 			},
 			transpile : [
 				{
@@ -20,10 +20,12 @@ Seed({
 						type : "arrowFunction"
 					},
 					execute : function(node, create, options, loc){
-
-							console.log("FOUND")
-
-						var argumentString= create(node.children[0].children, options, loc);
+					
+						if(node.children[0].children.length){
+							var argumentString = create(node.children[0].children, options, loc);
+						}else{
+							var argumentString = " " + node.children[0].name + " ";
+						}
 						var code = node.children.splice(2, node.children.length);
 						
 						if(code[0].type === "block"){
