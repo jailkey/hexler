@@ -64,6 +64,10 @@ Seed({
 			 */
 			createToken : TokenFactory,
 
+			addKeyword : function(keyword){
+
+			},
+
 			/**
 			 * @method addRule 
 			 * @description adds a tree rule

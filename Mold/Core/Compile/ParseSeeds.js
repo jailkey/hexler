@@ -4,7 +4,8 @@ Seed({
 		include : [
 			{ 'SeedStates' : 'Mold.Core.SeedStates'},
 			{ 'SeedParsingManager' : 'Mold.Core.Compile.SeedParsingManager'},
-			{ 'ArrowFunction' : 'Mold.DNA.ArrowFunction'}
+			{ 'ArrowFunction' : 'Mold.DNA.ArrowFunction'},
+			{ 'ImportDNA' : 'Mold.DNA.Import'}
 
 		],
 		test : "Mold.Test.Core.Compile.ParseSeeds"
@@ -27,7 +28,7 @@ Seed({
 				SeedParsingManager.parse(seed);
 				
 				//add dna
-				SeedParsingManager.addDNA(seed, ArrowFunction);
+				SeedParsingManager.addDNA(seed, ImportDNA);
 				SeedParsingManager.parse(seed);
 				done()
 			})

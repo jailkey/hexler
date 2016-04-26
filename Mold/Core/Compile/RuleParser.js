@@ -21,7 +21,7 @@ Seed({
 					if(options.action){
 						this.execAction(result[i], options, tree);
 						for(var y = 0; y < result[i].length; y++){
-							if(result[i][y].expression.retype){
+							if(result[i][y].expression && result[i][y].expression.retype){
 								result[i][y].token.change({ type : result[i][y].expression.retype});
 							}
 						}
@@ -245,6 +245,7 @@ Seed({
 							output = output.concat(collectedIgnors);
 						}
 						output.push(result);
+
 					}else{
 						if(exp.optional){
 							output.push(true);
@@ -319,7 +320,8 @@ Seed({
 							var slice = tree.slice(y, tree.length);
 							options.nextExpression = expression[i +1];
 							var result = this.testEntry(expression[i], slice, options);
-							
+
+							console.log("CHECK", y, expression[i].type, result.length, result)
 							if(!result.length){
 								test = false;
 								y++;

@@ -72,7 +72,7 @@ Seed({
 						kleber.on(transpiler.match, transpiler.execute);
 					})
 				})
-				
+				//console.log(parser.parser.tree.children)
 				var result = kleber.create(parser.parser.tree.children);
 				console.log("result", result)
 				return seed;
