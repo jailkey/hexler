@@ -55,6 +55,22 @@ Seed({
 				nextSibling : function(){
 					return this.parent.children[this.index+1] || null;
 				},
+				find : function(query, notRecursiv){
+					var collected = [], found;
+					for(var i = 0; i < this.children.length; i++){
+						found = false;
+						for(var prop in query){
+							found = (this.children[i][prop] === query[prop]) ? true : false;
+						}
+						if(found){
+							collected.push(this.children[i])
+						}
+						if(this.children[i].children.length && !notRecursiv){
+							collected.concat(this.children[i].find(query));
+						}
+					}
+					return collected
+				},
 				child : function(type){
 					var collected = [];
 					for(var i = 0; i < this.children.length; i++){

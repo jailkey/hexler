@@ -18,7 +18,7 @@ Seed({
 		
 		SeedParsingManager.prototype = {
 			createSeedParser : function(seed){
-				
+				console.log("CREATE SEED PARSER", seed.name)
 				if(!seed.name){
 					throw new Error ("seed name is not defined!");
 				}
@@ -38,7 +38,6 @@ Seed({
 				return this.parser[seed.name];
 			},
 			getParser : function(seed){
-				console.log("seedname", seed.name)
 				if(!this.parser[seed.name]){
 					throw new Error("No parser for dna defined!");
 				}
@@ -48,33 +47,31 @@ Seed({
 			addDNA : function(seed, dna){
 				this.getParser(seed).dna.push(dna);
 				if(typeof dna.transform == "function"){
-					dna.transform(this.getParser(seed).parser)
+					dna.transform(this.getParser(seed).parser);
 				}
 			},
 			parse : function(seed){
+				console.log("PARSE", seed.name)
 				this.getParser(seed).parser.parse(seed.path);
 			},
 			generate : function(seed){
+				console.log("GENERATE", seed.name)
 				if(!seed.type){
 					seed.type = "module";
-				}
-
-				seed.code = function(){
-					
 				}
 
 				var parser = this.getParser(seed);
 				var kleber = new Kleber(seed.path, seed.fileData);
 
-
 				parser.dna.forEach(function(currentDNA){
-					currentDNA.transpile.forEach(function(transpiler){
+					currentDNA.transpile(currentDNA.infos).forEach(function(transpiler){
 						kleber.on(transpiler.match, transpiler.execute);
 					})
 				})
-				//console.log(parser.parser.tree.children)
+	
 				var result = kleber.create(parser.parser.tree.children);
-				console.log("result", result)
+				seed.code = new Function("return function(module){" + result  + "}")
+				console.log("result", result, seed.code)
 				return seed;
 			}
 		}

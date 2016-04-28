@@ -7,7 +7,11 @@ Seed({
 		var DNA = function DNA(name, config){
 			this.name = name;
 			this.validate(config);
+			this.parser = null;
+
 			this.transform = config.transform;
+			this.infos = config.infos;
+			this.handleSeed = config.handleSeed;
 			this.transpile = config.transpile;
 		}
 

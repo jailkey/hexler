@@ -321,7 +321,6 @@ Seed({
 							options.nextExpression = expression[i +1];
 							var result = this.testEntry(expression[i], slice, options);
 
-							console.log("CHECK", y, expression[i].type, result.length, result)
 							if(!result.length){
 								test = false;
 								y++;

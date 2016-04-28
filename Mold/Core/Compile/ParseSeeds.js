@@ -27,35 +27,32 @@ Seed({
 				//parse data
 				SeedParsingManager.parse(seed);
 				
-				//add dna
+				//add import dna
 				SeedParsingManager.addDNA(seed, ImportDNA);
+				
+				//get import infos from import seed, the importInfos are set after parsing
+				var importInfos = { data : [] };
+				ImportDNA.infos(SeedParsingManager.getParser(seed).parser, importInfos);
 				SeedParsingManager.parse(seed);
+				ImportDNA.handleSeed(seed, importInfos)
+
 				done()
 			})
 			.onAfter(SeedStates.PARSE, function(seed, done){
 				seed.state = Mold.Core.SeedStates.LOAD_DEPENDENCIES;
-
-				console.log("seed", seed.parser)
-				console.log("after PARSE")
 				done();
 			})
 			.on(SeedStates.TRANSFORM, function(seed, done){
-
-				console.log("do TRANSFROM", seed.name);
 				done()
 			})
 			.onAfter(SeedStates.TRANSFORM, function(seed, done){
-				console.log("after TRANSFROM")
 				seed.state = Mold.Core.SeedStates.TRANSPILE;
 				done();
 			})
 			.on(SeedStates.TRANSPILE, function(seed, done){
-				console.log("do TRANSPILE", seed.name);
 				done()
 			})
 			.onAfter(SeedStates.TRANSPILE, function(seed, done){
-				console.log("after TRANSPILE");
-				
 				//generates new code from the seed
 				seed = SeedParsingManager.generate(seed);
 

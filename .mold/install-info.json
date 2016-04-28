@@ -7,11 +7,7 @@
 					"type": "file"
 				},
 				{
-					"path": "Mold/Core/VM.js",
-					"type": "file"
-				},
-				{
-					"path": "Mold/Core/Version.js",
+					"path": "Mold/Core/NPM.js",
 					"type": "file"
 				},
 				{
@@ -19,7 +15,11 @@
 					"type": "file"
 				},
 				{
-					"path": "Mold/Core/NPM.js",
+					"path": "Mold/Core/Version.js",
+					"type": "file"
+				},
+				{
+					"path": "Mold/Core/VM.js",
 					"type": "file"
 				},
 				{
@@ -38,7 +38,11 @@
 		"Mold.Core.Test": {
 			"sources": [
 				{
-					"path": "Mold/CMD/Test.js",
+					"path": "Mold/Core/Test/ConsoleReporter.js",
+					"type": "file"
+				},
+				{
+					"path": "Mold/Test/Core/Tester.js",
 					"type": "file"
 				},
 				{
@@ -46,15 +50,15 @@
 					"type": "file"
 				},
 				{
+					"path": "Mold/CMD/Test.js",
+					"type": "file"
+				},
+				{
+					"path": "Mold/Core/Test/Integrate.js",
+					"type": "file"
+				},
+				{
 					"path": "Mold/Core/Test/Tester.js",
-					"type": "file"
-				},
-				{
-					"path": "Mold/Core/Test/ConsoleReporter.js",
-					"type": "file"
-				},
-				{
-					"path": "Mold/Test/Core/Tester.js",
 					"type": "file"
 				}
 			],
@@ -111,11 +115,11 @@
 					"type": "file"
 				},
 				{
-					"path": "Mold/Core/CLIHelper.js",
+					"path": "Mold/Core/CLIForm.js",
 					"type": "file"
 				},
 				{
-					"path": "Mold/Core/CLIForm.js",
+					"path": "Mold/Core/CLIHelper.js",
 					"type": "file"
 				}
 			],

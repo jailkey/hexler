@@ -104,6 +104,11 @@ Seed({
 				return this;
 			},
 
+			createRule : function(rule){
+				this.createAction(rule, function(){});
+				return this;
+			},
+
 			/**
 			 * @method createParent 
 			 * @description creates a new parent token if the rule matches, the machted nodes become child tokens of the new one
