@@ -1,8 +1,31 @@
 //!info transpiled
 Seed({
-		type : "module"
+		type : "module",
+		include : [
+			{ "SeedParsingManager" : "Mold.Core.Compile.SeedParsingManager" }
+		]
 	},
 	function(module){
+
+		//copy the es6module type and modify it
+		var es6ModuleTypeCopy = Object.create(Mold.Core.SeedTypeManager.get('es6module'));
+
+		//changetype
+		es6ModuleTypeCopy.name = "dna";
+		es6ModuleTypeCopy.__create = es6ModuleTypeCopy.create;
+		es6ModuleTypeCopy.create = function(seed){
+			//if a dna seed will be created check his caller
+			seed.onCall(function(callerSeed){
+				if(!callerSeed.transpiled){
+					SeedParsingManager.addDNA(callerSeed, seed.module.exportDefault);
+				}
+			})
+			es6ModuleTypeCopy.__create.call(es6ModuleTypeCopy, seed);
+		}
+
+		//add ne module type
+		Mold.Core.SeedTypeManager.add(es6ModuleTypeCopy);
+
 
 		var DNA = function DNA(name, config){
 			this.name = name;

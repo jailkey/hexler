@@ -4,7 +4,6 @@ Seed({
 		include : [
 			{ 'SeedStates' : 'Mold.Core.SeedStates'},
 			{ 'SeedParsingManager' : 'Mold.Core.Compile.SeedParsingManager'},
-			{ 'ArrowFunction' : 'Mold.DNA.ArrowFunction'},
 			{ 'ImportDNA' : 'Mold.DNA.Import'}
 
 		],
@@ -50,13 +49,14 @@ Seed({
 				done();
 			})
 			.on(SeedStates.TRANSPILE, function(seed, done){
+				seed = SeedParsingManager.generate(seed);
 				done()
 			})
 			.onAfter(SeedStates.TRANSPILE, function(seed, done){
 				//generates new code from the seed
-				seed = SeedParsingManager.generate(seed);
-
+				
 				seed.state = Mold.Core.SeedStates.EXECUTE;
+				console.log("SET TO EXECUTE", seed.name)
 				done();
 			})
 	}

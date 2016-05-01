@@ -7,7 +7,9 @@ Seed({
 			{ "Walker" : ".Walker" }
 		]
 	},
-	function(module){	
+	function(module){
+
+		var _expressionCache = {};
 
 		var Expression = function(rule){
 			var parser = new Parser();
@@ -162,6 +164,13 @@ Seed({
 			return createExpression(tree.children);
 		}
 
-		module.exports = Expression;
+		//cache rule expression;
+		module.exports = function(rule) {
+			if(_expressionCache[rule]){
+				return _expressionCache[rule];
+			}
+			_expressionCache[rule] = Expression(rule);
+			return _expressionCache[rule];
+		}
 	}
 );

@@ -18,9 +18,8 @@ Seed({
 		
 		SeedParsingManager.prototype = {
 			createSeedParser : function(seed){
-				console.log("CREATE SEED PARSER", seed.name)
 				if(!seed.name){
-					throw new Error ("seed name is not defined!");
+					throw new Error ("Seed name is not defined! [Mold.Core.Compile.SeedParsingManager]");
 				}
 
 				if(!seed.fileData){
@@ -38,26 +37,31 @@ Seed({
 				return this.parser[seed.name];
 			},
 			getParser : function(seed){
+			
 				if(!this.parser[seed.name]){
-					throw new Error("No parser for dna defined!");
+					throw new Error("No parser for dna [" + seed.name + "] defined! [Mold.Core.Compile.SeedParsingManager]");
 				}
 
 				return this.parser[seed.name];
 			},
 			addDNA : function(seed, dna){
+				//console.log("ADD DNA", dna.name, " to ", seed.name)
 				this.getParser(seed).dna.push(dna);
 				if(typeof dna.transform == "function"){
 					dna.transform(this.getParser(seed).parser);
 				}
 			},
 			parse : function(seed){
-				console.log("PARSE", seed.name)
+				//console.log("PARSE", seed.name)
 				this.getParser(seed).parser.parse(seed.path);
 			},
 			generate : function(seed){
-				console.log("GENERATE", seed.name)
+				//console.log("GENERATE", seed.name)
+				//last parsing befor generating
+				this.getParser(seed).parser.parse(seed.path);
+				
 				if(!seed.type){
-					seed.type = "module";
+					seed.type = "es6module";
 				}
 
 				var parser = this.getParser(seed);
@@ -68,10 +72,9 @@ Seed({
 						kleber.on(transpiler.match, transpiler.execute);
 					})
 				})
-	
+				
 				var result = kleber.create(parser.parser.tree.children);
-				seed.code = new Function("return function(module){" + result  + "}")
-				console.log("result", result, seed.code)
+				seed.code = new Function("__module", result)
 				return seed;
 			}
 		}

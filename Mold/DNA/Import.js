@@ -14,14 +14,14 @@ Seed({
 				imports : []
 			}
 
-			var moldModulNameMatches = token.find({ type : 'moldModul' });
+			var moldModulNameMatches = token.find({ type : 'moldModul' }, false);
 
 			if(moldModulNameMatches.length){
 				output.isMoldModule = true;
 				output.module = moldModulNameMatches[0].name;
 			}else{
 			
-				var stringModulNameMatches = token.find({ type : 'moduleString' });
+				var stringModulNameMatches = token.find({ type : 'moduleString' }, false);
 				if(stringModulNameMatches.length){
 					output.module = stringModulNameMatches[0].name;
 				}else{
@@ -29,16 +29,17 @@ Seed({
 				}
 			}
 
-			var defaultMember = token.find({ type : 'defaultMember' });
+			var defaultMember = token.find({ type : 'defaultMember' }, false);
 			if(defaultMember.length){
 				output.imports.push({
-					isDefaultMember : true
+					isDefaultMember : true,
+					alias : defaultMember[0].name
 				})
 			}
 
-			var allMembers = token.find({ type : 'allMembers' });
+			var allMembers = token.find({ type : 'allMembers' }, false);
 			if(allMembers.length){
-				var allMembersName = token.find({ type : 'allMembersName' });
+				var allMembersName = token.find({ type : 'allMembersName' }, false);
 				if(!allMembersName.length){
 					throw new Error("Something went wrong, no member name for import member * found! [Mold.DNA.Import]")
 				}
@@ -49,7 +50,7 @@ Seed({
 				})
 			}
 
-			var memberExpression = token.find({ type : 'memberExpression' });
+			var memberExpression = token.find({ type : 'memberExpression' }, false);
 			if(memberExpression.length){
 				var currentImport = {};
 				for(var i = 0; i < memberExpression[0].children.length; i++){
@@ -80,7 +81,7 @@ Seed({
 
 		module.exports = new DNA("module-import", {
 			transform : function(parser){
-				console.log("TRANSFORM")
+
 				//match short imports
 				parser.createParent("val = 'import' | string => 'moduleString' || val => 'moldModul' | terminator || lineend", "import");
 				
@@ -114,14 +115,11 @@ Seed({
 				return input;
 			},
 			handleSeed : function(seed, infos){
-				
 				for(var i = 0; i < infos.data.length; i++){
 					var module = infos.data[i];
-				
+					
 					//currently only mold modules are implemented
-					console.log("module", module)
 					if(module.isMoldModule){
-						console.log("ADD DEP", module.module)
 						seed.addDependency(module.module);
 					}
 				}
@@ -133,9 +131,48 @@ Seed({
 							type : "import"
 						},
 						execute : function(node, create, options, loc){
-							console.log("FOUND", node)
+							var output = "";
+							var moduleInfos = _findInfos(node);
+							
+							//handle mold module imports
+							if(moduleInfos.isMoldModule && moduleInfos.imports.length){
+								console.log(moduleInfos)
+								for(var i = 0; i < moduleInfos.imports.length; i++){
+									if(moduleInfos.imports[i].isDefaultMember){
+										output += "var " +  moduleInfos.imports[i].alias + " = ";
+										output += "Mold.Core.SeedManager.get('" + moduleInfos.module + "').module.exportDefault;"
+										output += "\n";
+									}else if(moduleInfos.imports[i].isAllMembers){
+										if(moduleInfos.imports[i].alias){
+											output += "var " +  moduleInfos.imports[i].alias + " = ";
+											output += "Mold.Core.SeedManager.get('" + moduleInfos.module + "').module.getAll();"
+											output += "\n";
+										}else{
+											var allImports = Mold.Core.SeedManager.get(moduleInfos.module).module.getAll();
+											for(var alias in allImports){
+												output += "var " + alias + " = ";
+												output += "Mold.Core.SeedManager.get('" + moduleInfos.module + "').module._namedExports['" + alias + "'];"
+												output += "\n";
+											}
+										}
+									}else if(moduleInfos.imports[i].isMember){
+										if(moduleInfos.imports[i].alias){
+											output += "var " + moduleInfos.imports[i].alias + " = ";
+											output += "Mold.Core.SeedManager.get('" + moduleInfos.module + "').module._namedExports['" + moduleInfos.imports[i].name + "'];"
+											output += "\n";
+										}else{
+											output += "var " + moduleInfos.imports[i].name + " = ";
+											output += "Mold.Core.SeedManager.get('" + moduleInfos.module + "').module._namedExports['" + moduleInfos.imports[i].name + "'];"
+											output += "\n";
+										}
+									}
+									
+								}
+								
+							}
+							
 							//this.findInfos(node, tree)
-							return { output : "" }
+							return { output : output }
 						}
 					}
 	 			]

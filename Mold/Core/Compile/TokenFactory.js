@@ -55,18 +55,20 @@ Seed({
 				nextSibling : function(){
 					return this.parent.children[this.index+1] || null;
 				},
-				find : function(query, notRecursiv){
+				find : function(query, notRecursiv, target){
 					var collected = [], found;
-					for(var i = 0; i < this.children.length; i++){
+					target = target || this;
+					for(var i = 0; i < target.children.length; i++){
 						found = false;
 						for(var prop in query){
-							found = (this.children[i][prop] === query[prop]) ? true : false;
+							found = (target.children[i][prop] === query[prop]) ? true : false;
 						}
 						if(found){
-							collected.push(this.children[i])
+							collected.push(target.children[i])
 						}
-						if(this.children[i].children.length && !notRecursiv){
-							collected.concat(this.children[i].find(query));
+						if(target.children[i].children.length && !notRecursiv){
+							var recursivResult = this.find(query, false, target.children[i]);
+							collected = collected.concat(recursivResult);
 						}
 					}
 					return collected

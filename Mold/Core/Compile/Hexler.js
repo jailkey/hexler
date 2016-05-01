@@ -85,8 +85,8 @@ Seed({
 			 * @description creates an action that will be executed when the rules matches
 			 * @param  {string} rule  the rule 
 			 * @param  {function} action the action that has to be executed when the rule matches, passed arguments are:
-			 *                           - matches an array with matched tokens
-			 *                           - tree the hole tree
+			 * - matches an array with matched tokens
+			 * - tree the hole tree
 			 */
 			createAction : function(rule, action){
 

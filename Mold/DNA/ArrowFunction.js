@@ -1,18 +1,16 @@
 //!info transpiled
 Seed({
-		type : "module",
+		type : "dna",
 		include : [
 			{ 'DNA' : 'Mold.Core.Compile.DNA' }
 		]
 	},
 	function(module){
 
-		module.exports = new DNA("arrow-function", {
+		module.exportDefault = new DNA("arrow-function", {
 			transform : function(parser){
-
 				parser.createParent("val || expression => 'arguments' | operator = '=>' | block", "arrowFunction");
 				parser.createParent("val || expression  => 'arguments' | operator = '=>' | * ? | terminator || $", "arrowFunction");
-
 			},
 			transpile : function(){
 				return [
@@ -21,7 +19,6 @@ Seed({
 							type : "arrowFunction"
 						},
 						execute : function(node, create, options, loc){
-						
 							if(node.children[0].children.length){
 								var argumentString = create(node.children[0].children, options, loc);
 							}else{
