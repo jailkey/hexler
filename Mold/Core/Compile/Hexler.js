@@ -24,6 +24,7 @@ Seed({
 			this.content = null;
 			this.tree = null;
 			this.rules = [];
+			this.groups = [];
 
 			this.parser = new Parser();
 			this.ruleParser = new RuleParser();
@@ -46,8 +47,11 @@ Seed({
 			 * @return {object} returns the parsed tree
 			 */
 			parse : function(fileName){
+				console.log("PARSE", fileName)
 				this.tree = this.parser.parse(this.content, fileName);
+				console.log("PARSE RULE", Object.create(this.tree), this.parser.keywords)
 				for(var i = 0; i < this.rules.length; i++){
+					
 					this.tree = this.ruleParser.parseRule(this.tree, this.rules[i].rule, this.rules[i].options);
 				}
 				return this.tree;
@@ -93,7 +97,9 @@ Seed({
 				if(typeof action !== 'function'){
 					throw new Error('Argument "action" must be a function!')
 				}
+				rule = this.parseRuleStringForGroups(rule);
 
+				//console.log("RULE", rule)
 				this.rules.push({
 					rule : rule,
 					options : {
@@ -118,7 +124,6 @@ Seed({
 			 */
 			createParent : function(rule, name, properties){
 				this.createAction(rule, function(matches, tree){
-
 					var parent = matches[0].token.parent;
 					var newToken = TokenFactory(name, name,  { loc : matches[0].token.loc });
 					if(typeof properties === 'object'){
@@ -142,7 +147,8 @@ Seed({
 							parent.removeChild(matches[i].token);
 							newToken.addChild(matches[i].token);
 						}
-					}		
+					}
+					console.log("PARENT CREATED", name)		
 				});
 				return this;
 			},
@@ -199,6 +205,82 @@ Seed({
 					}
 				});
 				return this;
+			},
+
+			/**
+			 * @method parseRuleStringForGroups 
+			 * @description parse a rulestring and replace groups with the rule value
+			 * @param {string} rule - the rule
+			 * @return {string} returns the string with the replaces group
+			 */
+			parseRuleStringForGroups : function(rule){
+				for(var i = 0; i < this.groups.length; i++){
+					var reg = new RegExp("\\$\\{" + this.groups[i].name + "\\}", "m");
+					rule = rule.replace(reg, this.getGroupString(this.groups[i].name));
+				}
+				return rule;
+			},
+
+			/**
+			 * @method getGroupString 
+			 * @description creates a value string from a group
+			 * @param  {string} name - the group name
+			 * @return {string} returns the group value string
+			 */
+			getGroupString : function(name){
+				var group = this.groups.find(function(entry){ return entry.name === name });
+				if(group){
+					return group.values.join(group.logic)
+				}
+				return null;
+			},
+
+			/**
+			 * @method addGroup 
+			 * @description adds a new group 
+			 * @param {string} name - the name of the group
+			 * @param {mixed} values - group value
+			 * @param {string} [logic] - optional logic operator, default is or
+			 */
+			addGroup : function(name, values, logic){
+
+				var group = {
+					name : name,
+					values : (Array.isArray(values)) ? values : [values],
+					logic : (logic) ? logic : ' || '
+				}
+
+				this.groups.push(group);
+				return group;
+			},
+
+			/**
+			 * @method addGroupEntry 
+			 * @description adds a group entry, if the group is not defined a new group will be created
+			 * @param {string} name - the name of the group 
+			 * @param {mixed} value - the group value
+			 */
+			addGroupEntry : function(name, value){
+				var group = this.groups.find(function(entry){ return entry.name === name })
+				if(!group){
+					group = this.addGroup(name, value);
+					return;
+				}
+				if(Array.isArray(value)){
+					group.values = group.values.concat(value)
+				}else{
+					group.values.push(value)
+				}
+			},
+
+			belongsToGroup : function(name, value){
+				var group = this.groups.find(function(entry){ return entry.name === name })
+
+				if(!group){
+					return false;
+				}
+
+				return !!~group.values.indexOf(value);
 			}
 
 		}

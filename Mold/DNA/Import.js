@@ -50,14 +50,17 @@ Seed({
 				})
 			}
 
+
 			var memberExpression = token.find({ type : 'memberExpression' }, false);
 			if(memberExpression.length){
 				var currentImport = {};
 				for(var i = 0; i < memberExpression[0].children.length; i++){
 					var currentMember = memberExpression[0].children[i];
 					currentImport.isMember = true;
-
 					switch(currentMember.type){
+						case "defaultValue":
+							currentImport.isDefaultMember = true;
+							break;
 						case "memberValue":
 							currentImport.name = currentMember.name;
 							output.imports.push(currentImport)
@@ -87,7 +90,7 @@ Seed({
 				
 				//match defaultMember or expression
 				parser.createParent(
-						"val = 'import' | val => 'defaultValue' || block => 'memberExpression' "
+						"val = 'import' | val => 'defaultMember' || block => 'memberExpression' "
 						+ " |  val = 'from' => 'importFrom' | string => 'moduleString' || val => 'moldModul' | terminator || lineend"
 				, "import")
 				
@@ -95,6 +98,12 @@ Seed({
 				parser.createParent(
 						"val = 'import' | val => 'defaultMember'" 
 						+ " | comma | block => 'memberExpression' || [operator = '*' => 'allMembers' | val = 'as' => 'memberAs' | val => 'allMembersName']"
+						+ " |  val = 'from' => 'importFrom' | string => 'moduleString' || val => 'moldModul' | terminator || lineend"
+				, "import")
+
+				//simple default rule
+				parser.createParent(
+						"val = 'import' | val => 'defaultMember'" 
 						+ " |  val = 'from' => 'importFrom' | string => 'moduleString' || val => 'moldModul' | terminator || lineend"
 				, "import")
 
@@ -133,14 +142,14 @@ Seed({
 						execute : function(node, create, options, loc){
 							var output = "";
 							var moduleInfos = _findInfos(node);
-							
+							//console.log("IMPORT", moduleInfos)
 							//handle mold module imports
 							if(moduleInfos.isMoldModule && moduleInfos.imports.length){
-								console.log(moduleInfos)
+								console.log("INFOS", moduleInfos)
 								for(var i = 0; i < moduleInfos.imports.length; i++){
 									if(moduleInfos.imports[i].isDefaultMember){
 										output += "var " +  moduleInfos.imports[i].alias + " = ";
-										output += "Mold.Core.SeedManager.get('" + moduleInfos.module + "').module.exportDefault;"
+										output += "Mold.Core.SeedManager.get('" + moduleInfos.module + "').module.defaultExport;"
 										output += "\n";
 									}else if(moduleInfos.imports[i].isAllMembers){
 										if(moduleInfos.imports[i].alias){
@@ -170,7 +179,7 @@ Seed({
 								}
 								
 							}
-							
+							console.log("IMPORT",  node, output)
 							//this.findInfos(node, tree)
 							return { output : output }
 						}

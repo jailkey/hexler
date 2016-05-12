@@ -43,9 +43,10 @@ Seed({
 				if(!config.transform){
 					throw new Error("DNA transform function is not defined!");
 				}
+				/*
 				if(!config.transpile){
 					throw new Error("DNA transpile object is not defined!");
-				}
+				}*/
 				return true;
 			}
 

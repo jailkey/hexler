@@ -76,12 +76,14 @@ Seed({
 				child : function(type){
 					var collected = [];
 					for(var i = 0; i < this.children.length; i++){
-						if(this.children[0].type === type){
-							collected.push(this.children[0]);
+						if(this.children[i].type === type){
+							collected.push(this.children[i]);
 						}
 					}
-
-					return (collected.length === 1) ? collected[1] : collected;
+					if(!collected.length){
+						return null;
+					}
+					return (collected.length === 1) ? collected[0] : collected;
 				}
 			}
 		}

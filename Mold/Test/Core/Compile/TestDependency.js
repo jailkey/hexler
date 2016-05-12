@@ -1,18 +1,42 @@
-import Mold.DNA.Export;
+import Mold.DNA.ES6;
 	
-	var test = {
-		ens : "ens",
-		zwo : "zwo"
-	}
+/*
+var myTestFunction = function name (){
+	console.log();
+}*/
 
-export * from test;
+var test = {
+	ens : "ens",
+	zwo : "zwo"
+}
 
-	var names = {
-		supermann : 'supermann',
-		bettmann : 'bettmann'
-	}
+//export * from test;
 
-export {supermann, bettmann as dieter} from names;
+var names = {
+	supermann : 'supermann',
+	bettmann : 'bettmann'
+}
+
+//export {supermann, bettmann as dieter} from names;
+
+var testDefault = {
+	theDefaultValue : "default value"
+}
+
+//export var consttwo = function() { console.log("consttwo") };
+
+var hans = function(){
+	console.log("HANS")
+}
+
+export {testDefault as default};
+
+export var test = "irgendwas";
+
+export var constante = "test";
+
+
+
 
 console.log("TEST")
 

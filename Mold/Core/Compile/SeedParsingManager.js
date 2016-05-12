@@ -56,7 +56,7 @@ Seed({
 				this.getParser(seed).parser.parse(seed.path);
 			},
 			generate : function(seed){
-				//console.log("GENERATE", seed.name)
+		
 				//last parsing befor generating
 				this.getParser(seed).parser.parse(seed.path);
 				
@@ -65,16 +65,25 @@ Seed({
 				}
 
 				var parser = this.getParser(seed);
+			
 				var kleber = new Kleber(seed.path, seed.fileData);
 
 				parser.dna.forEach(function(currentDNA){
-					currentDNA.transpile(currentDNA.infos).forEach(function(transpiler){
-						kleber.on(transpiler.match, transpiler.execute);
-					})
+					if(currentDNA.transpile){
+						currentDNA.transpile(currentDNA.infos, parser.parser).forEach(function(transpiler){
+							kleber.on(transpiler.match, transpiler.execute);
+						})
+					}
 				})
 				
 				var result = kleber.create(parser.parser.tree.children);
-				seed.code = new Function("__module", result)
+				result += "\n//# sourceURL=" + seed.path + "\n";
+				result += "\n//# sourceMappingURL=data:application/json;base64," + btoa(JSON.stringify(kleber.sourceMap.create())) +"";
+				try {
+					seed.code = new Function("__module", result)
+				}catch(e){
+					throw new Error("Transpiling failure [" + seed.name + "] \n" + result);
+				}
 				return seed;
 			}
 		}

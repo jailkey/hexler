@@ -141,7 +141,25 @@ Seed({
 
 			});
 
+			describe("test groups", function(){
+				it("creates new hexler instance", function(){
+					hexler = new Hexler();
+				});
 
+				it("adds a group", function(){
+					hexler.addGroupEntry("testgroup", "eins");
+					hexler.addGroupEntry("testgroup", "zwei");
+					expect(hexler.groups.length).toBe(1)
+					expect(hexler.groups[0].values.length).toBe(2);
+				});
+
+				it("test rules replacement", function(){
+					var testRule = "keyword = 'var' | val | operator = '='| ${testgroup}";
+					var parsedRule = hexler.parseRuleStringForGroups(testRule);
+					expect(parsedRule).toBe("keyword = 'var' | val | operator = '='| eins || zwei");
+				})
+
+			})
 
 
 

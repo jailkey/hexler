@@ -177,6 +177,7 @@ Seed({
 			},
 
 			testEntry : function(exp, tree, options, level){
+
 				var output = [];
 				var currentToken = tree[0];
 
@@ -223,6 +224,7 @@ Seed({
 				}else{
 					var result;
 					if(exp.logical){
+						//console.log("logicla", exp.logical, currentToken)
 						result = this.execLogicals(exp, currentToken);
 					}else{
 						result = this.execExpression(exp, currentToken);
@@ -279,6 +281,7 @@ Seed({
 			},
 
 			parseExpression : function(tree, expression, options){
+
 				var current = false;
 				var outputTree = [];
 				var collected = [];
@@ -299,6 +302,7 @@ Seed({
 					var originIndex = y;
 					for(;i < explen; i++){
 						options.index = i;
+
 						if(checkSublevel && subLevelTree && subLevelTree.length){
 
 							var subResult = this.testEntry(expression[i], subLevelTree.slice(z, subLevelTree.length), options);

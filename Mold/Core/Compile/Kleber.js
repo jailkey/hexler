@@ -31,6 +31,9 @@ Seed({
 					column : 0
 				}
 
+				//if tree is not an array convert it
+				tree = (Array.isArray(tree)) ? tree : [tree];
+		
 				var that = this;
 				var i = 0, len = tree.length;
 				var y = 0, visitorLen = this.visitors.length;

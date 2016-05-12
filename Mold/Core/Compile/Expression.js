@@ -12,7 +12,8 @@ Seed({
 		var _expressionCache = {};
 
 		var Expression = function(rule){
-			var parser = new Parser();
+			var parser = new Parser("EXPRESSOR");
+			
 			parser.keywords = [];
 			parser.operators = ["=", "&&", "||", "=>", "|", "~", ".", "!", "+", "*", ">"];
 

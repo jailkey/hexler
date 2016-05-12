@@ -4,7 +4,8 @@ Seed({
 		type : "module",
 		include : [
 			{ "TokenFactory" : ".TokenFactory" }
-		]
+		],
+		test : "Mold.Test.Core.Compile.Parser"
 	},
 	function(module){
 
@@ -12,8 +13,8 @@ Seed({
 		 * @class  Parser 
 		 * @description parse a string my the given parsing options
 		 */
-		var Parser = function(){
-
+		var Parser = function(name){
+			this.name = name || "default";
 		}
 
 		Parser.prototype = {
@@ -57,7 +58,7 @@ Seed({
 			keywords : [
 				"var", "const", "let", "if", "for", "while", "function",
 				"else", "continue", "break", "switch", "case", "default", "do", "class",
-				"throw", "catch", "try", "delete"
+				"throw", "catch", "try", "delete",
 			],
 
 			strings : [ '"', "'" ],
@@ -194,6 +195,10 @@ Seed({
 					var previousValue = "";
 
 					var next = function(len){
+						return string.substring(i + 1, i + 1 + len);
+					}
+
+					var fromCurrent = function(len){
 						return string.substring(i, i + len);
 					}
 
@@ -222,19 +227,17 @@ Seed({
 					}
 
 					var testOperator = function(){
-						var i = that.orderdOperators.length -1;
-						for(; i > 0; i--){
-							//console.log("test oberator", next(i), that.orderdOperators[i])
-							if(that.orderdOperators[i] && !!~that.orderdOperators[i].indexOf(next(i))){
+						var l = that.orderdOperators.length -1;
+						for(; l > 0; l--){
+							if(that.orderdOperators[l] && !!~that.orderdOperators[l].indexOf(next(l))){
 								return {
-									name : next(i),
-									len : i
+									name : next(l),
+									len : l
 								}
 							}
 						}
 						return false;
-					}	
-				
+					}
 					var operator = false;
 					if(mode === "collectString"){
 						if(this.isString(current) && current === currentStringType){
@@ -252,7 +255,7 @@ Seed({
 					}else if(mode === "collectComment"){
 						if(this.isMultilineCommentEnd(next(this.multilineCommentEnd.length))){
 							lastToken = TokenFactory(this.types.COMMENT, tokenValue, options);
-							i = i + this.multilineCommentEnd.length - 1;
+							i = i + this.multilineCommentEnd.length;
 							token.addChild(lastToken);
 							tokenValue = "";
 							mode = "default";
@@ -274,7 +277,10 @@ Seed({
 						mode = "collectSingleComment";
 
 					}else if(this.isMultilineCommentStart(next(this.multilineCommentStart.length))){
+						createVal();
+						tokenValue = "";
 						mode = "collectComment";
+						i = i + this.multilineCommentStart.length;
 
 					}else if(this.isString(current)){
 						mode = "collectString";
@@ -293,7 +299,7 @@ Seed({
 						lastToken = TokenFactory(this.types.OPERATOR, operator.name, options);
 						token.addChild(lastToken);
 						tokenValue = "";
-						i += (operator.len - 1)
+						i += operator.len;
 
 					}else if(this.isTextOperator(tokenValue, string.substring(i - tokenValue.length - 1, i - tokenValue.length), next(1))){
 						var pos = options.loc.charPosition - tokenValue.length;
