@@ -229,6 +229,29 @@ Seed({
 
 			});
 
+			describe("test parsing some dependent rules", function(){
+				it("creates new hexler instance", function(){
+					hexler = new Hexler();
+				});
+
+				it("adds some content", function(){
+					hexler.setContent("import {Hans, Peter, Paul as Gerd, supermann, dieter} from Mold.Test.Core.Compile.TestDependency;");
+				})
+
+				it("add rules and parse", function(){
+					hexler.createParent(
+						"val = 'import' | val => 'defaultMember' || block => 'memberExpression' "
+						+ " |  val = 'from' => 'importFrom' | string => 'moduleString' || val => 'moldModul' | terminator || lineend"
+					, "import")
+					hexler.createRule("val (parent.memberExpression) => 'memberValueWithAlias' | val = 'as' => 'memberAs' | val => 'memberAlias'")
+					hexler.createRule("val (parent.memberExpression) => 'memberValue'")
+
+					var tree = hexler.parse();
+
+					console.log("tree", tree)
+				})
+			})
+
 
 		});
 	}

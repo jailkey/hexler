@@ -4,16 +4,27 @@ Seed({
 	},
 	function(ParseSeeds){
 		var testSeed = null;
+		var dependentSeed = null;
 		describe("test parse seed with test seed", function(){
 			it("load test seed", function(next){
-				console.log("DO TEST")
 				Mold
 					.load("Mold.Test.Core.Compile.TestSeed")
 					.then(function(seed){
 						console.log("LOADED")
 						testSeed = seed;
+						expect(testSeed).not.toBe(null);
 						next();
 					})
+			})
+
+			it("get dependent seed", function(){
+				dependentSeed = Mold.Core.SeedManager.get("Mold.Test.Core.Compile.TestDependency")
+				expect(dependentSeed).not.toBe(null);
+			})
+
+			it("test export rules", function(){
+				expect(dependentSeed.module._namedExports['supermann']).toBe('supermann');
+				expect(dependentSeed.module._namedExports['dieter']).toBe('bettmann');
 			})
 
 			it("test import rules", function(){

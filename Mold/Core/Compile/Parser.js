@@ -195,11 +195,15 @@ Seed({
 					var previousValue = "";
 
 					var next = function(len){
-						return string.substring(i + 1, i + 1 + len);
+						return string.substring(i, i + len);
 					}
 
-					var fromCurrent = function(len){
-						return string.substring(i, i + len);
+					var shifted = function(shift, len){
+						return string.substring(i + shift, i + shift + len);
+					}
+
+					var afterNext = function(len){
+						return string.substring(i + 1, i  + 1 + len);
 					}
 
 					var options = {
@@ -227,17 +231,19 @@ Seed({
 					}
 
 					var testOperator = function(){
-						var l = that.orderdOperators.length -1;
-						for(; l > 0; l--){
-							if(that.orderdOperators[l] && !!~that.orderdOperators[l].indexOf(next(l))){
+						var i = that.orderdOperators.length -1;
+
+						for(; i > 0; i--){
+							if(that.orderdOperators[i] && !!~that.orderdOperators[i].indexOf(next(i))){
 								return {
-									name : next(l),
-									len : l
+									name : next(i),
+									len : i
 								}
 							}
 						}
 						return false;
 					}
+	
 					var operator = false;
 					if(mode === "collectString"){
 						if(this.isString(current) && current === currentStringType){
@@ -255,7 +261,7 @@ Seed({
 					}else if(mode === "collectComment"){
 						if(this.isMultilineCommentEnd(next(this.multilineCommentEnd.length))){
 							lastToken = TokenFactory(this.types.COMMENT, tokenValue, options);
-							i = i + this.multilineCommentEnd.length;
+							i = i + this.multilineCommentEnd.length - 1;
 							token.addChild(lastToken);
 							tokenValue = "";
 							mode = "default";
@@ -277,17 +283,14 @@ Seed({
 						mode = "collectSingleComment";
 
 					}else if(this.isMultilineCommentStart(next(this.multilineCommentStart.length))){
-						createVal();
-						tokenValue = "";
 						mode = "collectComment";
-						i = i + this.multilineCommentStart.length;
 
 					}else if(this.isString(current)){
 						mode = "collectString";
 						currentStringType = current;
 						
 
-					}else if(this.isKeyword(tokenValue, next(1))){
+					}else if(this.isKeyword(tokenValue, shifted(1, 1))){
 						var pos = options.loc.charPosition - tokenValue.length;
 						lastToken = TokenFactory(this.types.KEYWORD, tokenValue, options, pos);
 						token.addChild(lastToken);
@@ -299,7 +302,7 @@ Seed({
 						lastToken = TokenFactory(this.types.OPERATOR, operator.name, options);
 						token.addChild(lastToken);
 						tokenValue = "";
-						i += operator.len;
+						i += (operator.len - 1)
 
 					}else if(this.isTextOperator(tokenValue, string.substring(i - tokenValue.length - 1, i - tokenValue.length), next(1))){
 						var pos = options.loc.charPosition - tokenValue.length;

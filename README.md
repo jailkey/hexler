@@ -41,7 +41,7 @@ If no rules are defined the returned tree has only the following node types:
 
 ## usage
 
-#### crate an instance
+#### create an instance
 
 ```javascript
 	var hexler = new Hexler();
@@ -58,7 +58,7 @@ If no rules are defined the returned tree has only the following node types:
  	var tree = hexler.parse();
  ```
  
-Hexler parsed the given content an creates a tree from it, the tree looks like this:
+Hexler parsed the given content and creates a tree, the tree looks like this:
 
 	* programm
 		* keyword (var)
@@ -69,7 +69,7 @@ Hexler parsed the given content an creates a tree from it, the tree looks like t
 		
 
 #### creating rules
-to modify the tree we can crate rules:
+to modify the tree we can create rules:
  
  ```javascript
   hexler.createParent(
@@ -77,7 +77,7 @@ to modify the tree we can crate rules:
       'declaration'
   );
  ```
-the ```createParent``` method accepts two arguments, the first one is the rule pattern, the second one is the name for the new token.
+the ```createParent``` method accepts two arguments, the first one is the rule, the second one is the name for the new token.
  
 The rule above transforms the tree to the following:
 	

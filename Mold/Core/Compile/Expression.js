@@ -5,7 +5,8 @@ Seed({
 		include : [
 			{ "Parser" : ".Parser" },
 			{ "Walker" : ".Walker" }
-		]
+		],
+		test : "Mold.Test.Core.Compile.Expression"
 	},
 	function(module){
 

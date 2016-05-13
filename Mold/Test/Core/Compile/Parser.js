@@ -25,7 +25,7 @@ Seed({
 
 			it("parse a function expression", function(){
 				var tree = parser.parse("var test = function(){ };")
-
+				console.log("tree", tree)
 				expect(tree.children[0].type).toBe("keyword");
 				expect(tree.children[1].type).toBe("val");
 				expect(tree.children[2].type).toBe("operator");
@@ -49,6 +49,16 @@ Seed({
 				expect(tree.children[0].type).toBe("val");
 				expect(tree.children[1].type).toBe("comment");
 			});
+
+			it("parse a rule expression without space between operators", function(){
+				var tree = parser.parse("var test=5+3;");
+				console.log("tree", tree)
+			})
+
+			it("parse a rule expression", function(){
+				var tree = parser.parse("val (parent.memberExpression) => 'memberValue'");
+				console.log("tree", tree)
+			})
 		})
 
 	}

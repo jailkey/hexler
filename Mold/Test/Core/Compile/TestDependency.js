@@ -17,13 +17,13 @@ var names = {
 	bettmann : 'bettmann'
 }
 
-//export {supermann, bettmann as dieter} from names;
+export {supermann, bettmann as dieter} from names;
 
 var testDefault = {
 	theDefaultValue : "default value"
 }
 
-//export var consttwo = function() { console.log("consttwo") };
+export var consttwo = function() { console.log("consttwo") };
 
 var hans = function(){
 	console.log("HANS")
