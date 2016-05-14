@@ -25,6 +25,9 @@ Seed({
 			it("test export rules", function(){
 				expect(dependentSeed.module._namedExports['supermann']).toBe('supermann');
 				expect(dependentSeed.module._namedExports['dieter']).toBe('bettmann');
+				expect(dependentSeed.module._namedExports['consttwo']).toBeFunction();
+				expect(dependentSeed.module.defaultExport).toBeObject();
+				expect(dependentSeed.module.defaultExport.theDefaultValue).toBe("default value");
 			})
 
 			it("test import rules", function(){

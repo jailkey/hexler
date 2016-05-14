@@ -40,9 +40,6 @@ export var constante = "test";
 
 console.log("TEST")
 
-__module.exportDefault = function(){
-	console.log("DO THE DEFAULT");
-}
 
 __module.addExport("Hans", "Hans")
 __module.addExport("Peter", "Peter")

@@ -215,7 +215,7 @@ Seed({
 
 					previousValue = tokenValue;
 
-					if(!this.isWhitespace(current)){
+					if(!this.isWhitespace(current) || mode === "collectString"){
 						tokenValue += current;
 					}
 
